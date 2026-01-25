@@ -30,7 +30,7 @@ A modern, animated portfolio/agency website template built with SolidJS.
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js 18+
+- [Bun](https://bun.sh/) (recommended) or Node.js 18+
 - npm or bun
 
 ### Installation
@@ -41,17 +41,17 @@ git clone https://github.com/dacrab/solid-studio.git
 cd solid-studio
 
 # Install dependencies
-npm install
+bun install
 
 # Start development server
-npm run dev
+bun dev
 ```
 
 ### Build for Production
 
 ```bash
-npm run build
-npm run preview
+bun run build
+bun run preview
 ```
 
 ## 📁 Project Structure
