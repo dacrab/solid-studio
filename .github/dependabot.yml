@@ -5,23 +5,33 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
+      time: "02:00"
+      timezone: "Europe/Athens"
     open-pull-requests-limit: 10
-    commit-message:
-      prefix: "chore(deps):"
-    labels:
-      - "dependencies"
     groups:
-      production-dependencies:
-        patterns:
-          - "solid-js"
-          - "@solidjs/*"
-        update-types:
-          - "minor"
-          - "patch"
-      dev-dependencies:
+      dependencies:
         patterns:
           - "*"
-        dependency-type: "development"
         update-types:
           - "minor"
           - "patch"
+    labels:
+      - "dependencies"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "02:00"
+      timezone: "Europe/Athens"
+    open-pull-requests-limit: 10
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+    labels:
+      - "dependencies"
