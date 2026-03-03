@@ -1,3 +1,4 @@
+import { inject } from '@vercel/analytics';
 import { 
   Component, 
   createSignal, 
@@ -19,6 +20,7 @@ import { projects } from './data/projects';
 // ============================================
 
 const App: Component = () => {
+  inject();
   // ---- Basic Signals ----
   const [time, setTime] = createSignal('');
   const [mousePos, setMousePos] = createSignal({ x: 0, y: 0 });
