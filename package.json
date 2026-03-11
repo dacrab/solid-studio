@@ -9,12 +9,7 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.2.1",
     "@tailwindcss/vite": "^4.2.1",
-    "@types/bun": "latest",
-    "@types/node": "^25.3.5",
-    "autoprefixer": "^10.4.27",
-    "postcss": "^8.5.8",
     "tailwindcss": "^4.2.1",
     "vite": "^7.3.1",
     "vite-plugin-solid": "^2.11.10"
@@ -23,9 +18,8 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@solidjs/meta": "^0.29.4",
     "@solidjs/router": "^0.15.4",
-    "solid-js": "^1.9.11",
-    "solid-motionone": "^1.0.4",
-    "@vercel/analytics": "^1.6.1"
+    "solid-js": "^1.9.11"
   }
 }

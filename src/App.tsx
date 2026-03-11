@@ -1,291 +1,209 @@
-import { 
-  Component, 
-  createSignal, 
-  createEffect, 
-  createMemo,
-  onMount, 
+import {
+  Component,
+  createSignal,
+  createEffect,
+  onMount,
   onCleanup,
-  For, 
+  For,
   Show,
-  batch,
-  on
 } from 'solid-js';
 import { createStore } from 'solid-js/store';
 import { A } from '@solidjs/router';
+import { Title, Meta } from '@solidjs/meta';
 import { projects } from './data/projects';
+import { useCursor } from './hooks/useCursor';
 
-// ============================================
-// SOLID SHOWCASE: Fine-grained Reactivity Demo
-// ============================================
+const NAV_LINKS = [
+  { name: 'Work', href: '#work' },
+  { name: 'Studio', href: '#about' },
+  { name: 'Approach', href: '#services' },
+  { name: 'Contact', href: '#contact' },
+] as const;
+
+const SOCIALS_SHORT = ['Tw', 'Ig', 'Li'] as const;
+const SOCIALS = ['Twitter', 'Instagram', 'LinkedIn'] as const;
+
+const STATS = [
+  { label: 'Years active', value: 6 },
+  { label: 'Projects completed', value: 41 },
+  { label: 'People', value: 2 },
+] as const;
+
+const PRINCIPLES = [
+  {
+    title: 'We work with fewer clients, not more',
+    desc: 'Four to six projects a year. Enough to do each one properly. We have turned down work from companies most studios would kill for — because the timing was wrong, or the brief was vague, or we didn\'t believe in what they were building.',
+  },
+  {
+    title: 'The work has to stand on its own',
+    desc: 'We don\'t enter awards. We don\'t post process threads. If the identity doesn\'t work in the real world — on a building, in a product, under pressure — it doesn\'t work. Everything else is decoration.',
+  },
+  {
+    title: 'We write our own briefs',
+    desc: 'Most briefs are wish lists written by committee. We spend the first two weeks of every project tearing the brief apart and rebuilding it. Clients who trust us to do that get better work. Clients who don\'t tend to go elsewhere.',
+  },
+] as const;
+
+const CAPABILITIES = [
+  'Brand Identity', 'Visual Systems', 'Web Design',
+  'Digital Product', 'Design Systems', 'Art Direction',
+  'Environmental', 'Custom Type',
+] as const;
 
 const App: Component = () => {
-  // ---- Basic Signals ----
+  const { hovering, onEnter, onLeave, cursorStyle } = useCursor();
+
   const [time, setTime] = createSignal('');
-  const [mousePos, setMousePos] = createSignal({ x: 0, y: 0 });
   const [activeWork, setActiveWork] = createSignal<number | null>(null);
   const [menuOpen, setMenuOpen] = createSignal(false);
-  
-  // ---- SOLID FEATURE: Nested Store with fine-grained updates ----
-  // Unlike React, updating one property doesn't re-render everything
-  const [cursor, setCursor] = createStore({
-    x: 0,
-    y: 0,
-    scale: 1,
-    hovering: null as string | null,
-    velocity: { x: 0, y: 0 }
-  });
-
-  // ---- SOLID FEATURE: Derived/Computed values with createMemo ----
-  // Only recalculates when dependencies change - not on every render
-  const cursorStyle = createMemo(() => {
-    const scale = cursor.hovering ? 2.5 : 1;
-    const bg = cursor.hovering ? 'rgba(255,255,255,0.1)' : 'white';
-    return `
-      left: ${cursor.x - 10 * scale}px; 
-      top: ${cursor.y - 10 * scale}px;
-      width: ${20 * scale}px;
-      height: ${20 * scale}px;
-      background: ${bg};
-      border: ${cursor.hovering ? '1px solid white' : 'none'};
-    `;
-  });
-
-  // ---- SOLID FEATURE: Scroll progress tracking with signal ----
-  const [scrollY, setScrollY] = createSignal(0);
   const [scrollProgress, setScrollProgress] = createSignal(0);
-  
-  const scrollProgressPercent = createMemo(() => 
-    `${Math.round(scrollProgress() * 100)}%`
-  );
 
-  // ---- SOLID FEATURE: Intersection Observer with signals ----
   const [visibleSections, setVisibleSections] = createStore<Record<string, boolean>>({
     work: false,
     about: false,
     services: false,
-    contact: false
+    contact: false,
   });
 
-  // ---- SOLID FEATURE: createEffect for side effects ----
-  // Runs automatically when dependencies change, with automatic cleanup
   createEffect(() => {
-    if (menuOpen()) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
+    document.body.style.overflow = menuOpen() ? 'hidden' : '';
   });
-
-  // ---- SOLID FEATURE: on() for explicit dependency tracking ----
-  // More control than React's useEffect dependency array
-  createEffect(on(scrollY, (y, prevY) => {
-    if (prevY !== undefined) {
-      const direction = y > prevY ? 'down' : 'up';
-      // Could use this for header hide/show behavior
-    }
-  }, { defer: true }));
-
-  // ---- Smooth cursor with velocity tracking ----
-  let lastX = 0, lastY = 0;
-  let rafId: number;
-  
-  const updateCursor = (x: number, y: number) => {
-    // Calculate velocity for potential trail effects
-    const vx = x - lastX;
-    const vy = y - lastY;
-    lastX = x;
-    lastY = y;
-    
-    // SOLID FEATURE: batch() groups multiple updates into one
-    // Prevents unnecessary intermediate renders
-    batch(() => {
-      setCursor('x', x);
-      setCursor('y', y);
-      setCursor('velocity', { x: vx, y: vy });
-    });
-  };
 
   onMount(() => {
-    // ---- Time updates ----
     const updateTime = () => {
-      setTime(new Date().toLocaleTimeString('en-US', { 
-        hour: '2-digit', 
+      setTime(new Date().toLocaleTimeString('de-DE', {
+        hour: '2-digit',
         minute: '2-digit',
         hour12: false,
-        timeZone: 'America/Los_Angeles'
+        timeZone: 'Europe/Berlin',
       }));
     };
     updateTime();
     const timeInterval = setInterval(updateTime, 1000);
 
-    // ---- Mouse tracking with RAF for smooth 60fps updates ----
-    const handleMouse = (e: MouseEvent) => {
-      // Using RAF prevents jank from too many state updates
-      cancelAnimationFrame(rafId);
-      rafId = requestAnimationFrame(() => {
-        updateCursor(e.clientX, e.clientY);
-        setMousePos({ x: e.clientX, y: e.clientY });
-      });
-    };
-    window.addEventListener('mousemove', handleMouse);
-
-    // ---- Scroll tracking ----
     const handleScroll = () => {
-      const y = window.scrollY;
       const maxScroll = document.body.scrollHeight - window.innerHeight;
-      batch(() => {
-        setScrollY(y);
-        setScrollProgress(maxScroll > 0 ? y / maxScroll : 0);
-      });
+      setScrollProgress(maxScroll > 0 ? window.scrollY / maxScroll : 0);
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
 
-    // ---- SOLID FEATURE: Intersection Observer for section visibility ----
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach(entry => {
-          const id = entry.target.id;
-          if (id) {
-            setVisibleSections(id, entry.isIntersecting);
-          }
+          if (entry.target.id) setVisibleSections(entry.target.id, entry.isIntersecting);
         });
       },
-      { threshold: 0.3 }
+      { threshold: 0.2 }
     );
-    
-    // Observe all sections
-    document.querySelectorAll('section[id]').forEach(section => {
-      observer.observe(section);
-    });
+    document.querySelectorAll('section[id]').forEach(s => observer.observe(s));
 
-    // ---- SOLID FEATURE: onCleanup runs automatically ----
-    // No need for return function like React useEffect
     onCleanup(() => {
       clearInterval(timeInterval);
-      window.removeEventListener('mousemove', handleMouse);
       window.removeEventListener('scroll', handleScroll);
-      cancelAnimationFrame(rafId);
       observer.disconnect();
     });
   });
 
-  // ---- Cursor hover handlers ----
-  const handleCursorEnter = (type: string) => setCursor('hovering', type);
-  const handleCursorLeave = () => setCursor('hovering', null);
-
-  // Use imported projects data
-  const works = projects;
-
   return (
-    <div class="min-h-screen bg-[#f8f7f4] text-[#1a1a1a] selection:bg-[#1a1a1a] selection:text-[#f8f7f4]">
-      
-      {/* ---- SCROLL PROGRESS BAR ---- */}
-      <div 
-        class="fixed top-0 left-0 h-[2px] bg-[#1a1a1a] z-[200] transition-none"
+    <div class="min-h-screen bg-[#f0ede8] text-[#1a1a1a] selection:bg-[#1a1a1a] selection:text-[#f0ede8]">
+      <Title>Bureau — Brand & Digital, Berlin</Title>
+      <Meta name="description" content="Bureau is Jonas Ek and Mara Voss. Brand and digital for climate and deep tech companies." />
+
+      {/* Scroll progress */}
+      <div
+        class="fixed top-0 left-0 h-[1px] bg-[#1a1a1a] z-[200]"
         style={`width: ${scrollProgress() * 100}%`}
       />
 
-      {/* ---- CUSTOM CURSOR with reactive scaling ---- */}
-      <div 
-        class="fixed rounded-full pointer-events-none z-[100] mix-blend-difference hidden md:flex items-center justify-center transition-[width,height,background,border] duration-200 ease-out"
+      {/* Custom cursor — desktop only, mix-blend-difference inverts on any bg */}
+      <div
+        class="fixed rounded-full pointer-events-none z-[100] hidden md:flex items-center justify-center mix-blend-difference transition-[width,height,background,border] duration-200 ease-out"
         style={cursorStyle()}
       >
-        <Show when={cursor.hovering}>
-          <span class="text-[8px] uppercase tracking-widest text-white opacity-70">
-            {cursor.hovering}
+        <Show when={hovering()}>
+          <span class="text-[7px] uppercase tracking-widest text-white opacity-80 select-none">
+            {hovering()}
           </span>
         </Show>
       </div>
 
-      {/* ---- MENU OVERLAY ---- */}
+      {/* Menu overlay */}
       <Show when={menuOpen()}>
-        <div 
+        <div
           class="fixed inset-0 bg-[#1a1a1a] z-50 flex flex-col justify-between p-6 md:p-12"
-          style="animation: fadeIn 0.3s ease-out"
+          style="animation: fadeIn 0.25s ease-out"
         >
           <div class="flex justify-between items-center">
-            <a 
-              href="#" 
-              class="text-[#f8f7f4] font-medium tracking-tight text-lg" 
+            <span class="text-[#f0ede8] font-medium tracking-tight text-lg">Bureau</span>
+            <button
+              class="text-[#f0ede8] text-sm opacity-60 hover:opacity-100 transition-opacity py-2 px-1"
               onClick={() => setMenuOpen(false)}
-              onMouseEnter={() => handleCursorEnter('home')}
-              onMouseLeave={handleCursorLeave}
-            >
-              Outline°
-            </a>
-            <button 
-              class="text-[#f8f7f4] text-sm hover:opacity-60 transition-opacity"
-              onClick={() => setMenuOpen(false)}
-              onMouseEnter={() => handleCursorEnter('close')}
-              onMouseLeave={handleCursorLeave}
+              onMouseEnter={() => onEnter('close')}
+              onMouseLeave={onLeave}
             >
               Close
             </button>
           </div>
-          
-          <nav class="flex flex-col gap-2 md:gap-4">
-            <For each={[
-              { name: 'Work', href: '#work' },
-              { name: 'About', href: '#about' },
-              { name: 'Services', href: '#services' },
-              { name: 'Contact', href: '#contact' },
-            ]}>
+
+          <nav class="flex flex-col gap-1">
+            <For each={NAV_LINKS}>
               {(item, i) => (
-                <a 
+                <a
                   href={item.href}
-                  class="group text-[#f8f7f4] text-[clamp(2.5rem,10vw,6rem)] font-light leading-none tracking-tight transition-all duration-300 hover:pl-8"
+                  class="group flex items-baseline gap-4 md:gap-6 text-[#f0ede8] text-[clamp(2rem,9vw,6rem)] font-light leading-none tracking-tight py-3 border-b border-[#f0ede8]/10 hover:border-[#f0ede8]/30 transition-colors duration-300"
                   onClick={() => setMenuOpen(false)}
-                  onMouseEnter={() => handleCursorEnter('view')}
-                  onMouseLeave={handleCursorLeave}
-                  style={`animation: slideUp 0.4s ease-out ${i() * 0.05}s both`}
+                  onMouseEnter={() => onEnter('go')}
+                  onMouseLeave={onLeave}
+                  style={`animation: slideUp 0.35s ease-out ${i() * 0.06}s both`}
                 >
-                  <span class="inline-block transition-transform duration-300 group-hover:translate-x-4">{item.name}</span>
-                  <span class="inline-block ml-4 opacity-0 group-hover:opacity-40 transition-opacity duration-300 text-[0.4em]">→</span>
+                  <span class="text-[#f0ede8]/20 text-xs font-mono w-5 shrink-0">{String(i() + 1).padStart(2, '0')}</span>
+                  <span class="group-hover:translate-x-2 transition-transform duration-300">{item.name}</span>
                 </a>
               )}
             </For>
           </nav>
 
-          <div class="flex justify-between items-end text-[#f8f7f4]">
-            <div class="text-sm opacity-40">hello@outline.studio</div>
-            <div class="flex gap-6 text-sm">
-              <For each={['Tw', 'Ig', 'Li']}>
-                {(social) => (
-                  <a 
-                    href="#" 
-                    class="hover:opacity-50 transition-opacity"
-                    onMouseEnter={() => handleCursorEnter('link')}
-                    onMouseLeave={handleCursorLeave}
-                  >
-                    {social}
-                  </a>
-                )}
+          <div class="flex justify-between items-end text-[#f0ede8]">
+            <div>
+              <p class="text-xs opacity-40 mb-1">New projects</p>
+              <a
+                href="mailto:hello@bureau.studio"
+                class="text-sm hover:opacity-60 transition-opacity"
+                onMouseEnter={() => onEnter('mail')}
+                onMouseLeave={onLeave}
+              >
+                hello@bureau.studio
+              </a>
+            </div>
+            <div class="flex gap-5 text-sm opacity-40">
+              <For each={SOCIALS_SHORT}>
+                {(s) => <a href="#" class="hover:opacity-100 transition-opacity py-1">{s}</a>}
               </For>
             </div>
           </div>
         </div>
       </Show>
 
-      {/* ---- HEADER ---- */}
-      <header class="fixed top-0 left-0 right-0 z-40 mix-blend-difference">
-        <nav class="flex justify-between items-center px-6 md:px-12 py-6">
-          <a 
-            href="#" 
-            class="text-[#f8f7f4] font-medium tracking-tight text-lg"
-            onMouseEnter={() => handleCursorEnter('home')}
-            onMouseLeave={handleCursorLeave}
+      {/* Header */}
+      <header class="fixed top-0 left-0 right-0 z-40 bg-[#f0ede8]/80 backdrop-blur-sm border-b border-[#1a1a1a]/5">
+        <nav class="flex justify-between items-center px-6 md:px-12 py-5">
+          <a
+            href="#"
+            class="font-medium tracking-tight text-lg"
+            onMouseEnter={() => onEnter('home')}
+            onMouseLeave={onLeave}
           >
-            Outline°
+            Bureau
           </a>
-          <div class="flex items-center gap-8">
-            <span class="text-[#f8f7f4] text-sm font-mono opacity-60">
-              SF {time()}
+          <div class="flex items-center gap-6 md:gap-8">
+            <span class="text-sm font-mono opacity-40 hidden sm:block">
+              Berlin {time()}
             </span>
-            <button 
-              class="text-[#f8f7f4] text-sm hover:opacity-60 transition-opacity"
+            <button
+              class="text-sm opacity-60 hover:opacity-100 transition-opacity py-1"
               onClick={() => setMenuOpen(true)}
-              onMouseEnter={() => handleCursorEnter('menu')}
-              onMouseLeave={handleCursorLeave}
+              onMouseEnter={() => onEnter('menu')}
+              onMouseLeave={onLeave}
             >
               Menu
             </button>
@@ -293,238 +211,271 @@ const App: Component = () => {
         </nav>
       </header>
 
-      {/* ---- HERO ---- */}
-      <section class="min-h-screen flex flex-col justify-end px-6 md:px-12 pb-12">
-        <div class="grid md:grid-cols-12 gap-8 items-end">
-          <div class="md:col-span-8">
-            <h1 class="text-[clamp(3rem,12vw,10rem)] font-light leading-[0.85] tracking-[-0.04em]">
-              Design
+      {/* Hero */}
+      <section class="min-h-screen flex flex-col justify-between px-6 md:px-12 pt-28 md:pt-36 pb-10 md:pb-12">
+        <div class="space-y-8 md:space-y-0 md:grid md:grid-cols-12 md:gap-8">
+          <div class="md:col-span-9">
+            <h1 class="text-[clamp(2.6rem,9vw,9rem)] font-light leading-[0.88] tracking-[-0.04em]">
+              Brand and digital
               <br />
-              <span class="italic font-normal">studio</span>
+              for companies
+              <br />
+              <span class="italic">building what's next.</span>
             </h1>
           </div>
-          <div class="md:col-span-4 pb-4">
-            <p class="text-sm leading-relaxed max-w-xs opacity-60">
-              We create brands, products, and experiences for companies 
-              that refuse to blend in.
+          <div class="md:col-span-3 md:pt-4 md:flex md:flex-col md:justify-end">
+            <p class="text-sm leading-relaxed opacity-50 max-w-xs">
+              Bureau is Jonas Ek and Mara Voss. We work with climate and deep tech
+              companies that are serious about what they're doing.
             </p>
           </div>
         </div>
-        
-        {/* Scroll indicator - shows current progress */}
-        <div class="absolute bottom-12 right-12 hidden md:block">
-          <div class="flex flex-col items-center gap-2 text-xs opacity-40">
-            <span class="writing-vertical">Scroll</span>
-            <div class="w-px h-12 bg-current relative overflow-hidden">
-              <div 
-                class="absolute bottom-0 left-0 w-full bg-[#1a1a1a] transition-none"
+
+        {/* Bottom row — hide scroll indicator on mobile, keep metadata */}
+        <div class="flex justify-between items-end mt-16 md:mt-0 pt-8 md:pt-0 border-t border-[#1a1a1a]/8 md:border-none">
+          <div class="flex gap-6 text-xs opacity-30 font-mono">
+            <span>Est. 2019</span>
+            <span>Berlin, DE</span>
+          </div>
+          <div class="hidden md:flex flex-col items-end gap-2 text-xs opacity-30">
+            <span class="font-mono">{Math.round(scrollProgress() * 100)}%</span>
+            <div class="w-px h-10 bg-[#1a1a1a]/20 relative overflow-hidden">
+              <div
+                class="absolute top-0 left-0 w-full bg-[#1a1a1a]"
                 style={`height: ${scrollProgress() * 100}%`}
               />
             </div>
-            <span class="font-mono text-[10px]">{scrollProgressPercent()}</span>
           </div>
         </div>
       </section>
 
-      {/* ---- WORK SECTION ---- */}
-      <section 
-        id="work" 
-        class="px-6 md:px-12 py-24 md:py-32"
+      {/* Work */}
+      <section
+        id="work"
+        class="px-6 md:px-12 py-20 md:py-32"
         classList={{ 'opacity-100': visibleSections.work, 'opacity-0': !visibleSections.work }}
-        style="transition: opacity 0.6s ease-out"
+        style="transition: opacity 0.7s ease-out"
       >
-        <div class="flex justify-between items-baseline mb-16">
-          <h2 class="text-xs uppercase tracking-[0.2em] opacity-40">Selected Work</h2>
-          <span class="text-xs opacity-40">04 Projects</span>
+        <div class="flex justify-between items-baseline mb-10 md:mb-12">
+          <h2 class="text-xs uppercase tracking-[0.2em] opacity-30">Selected Work</h2>
+          <span class="text-xs opacity-30 font-mono">{String(projects.length).padStart(2, '0')}</span>
         </div>
 
-        <div class="space-y-1">
-          <For each={works}>
+        <div>
+          <For each={projects}>
             {(work, index) => (
               <A
                 href={`/project/${work.slug}`}
-                class="group block border-t border-[#1a1a1a]/10 py-6 md:py-8"
-                onMouseEnter={() => {
-                  setActiveWork(index());
-                  handleCursorEnter('view');
-                }}
-                onMouseLeave={() => {
-                  setActiveWork(null);
-                  handleCursorLeave();
-                }}
+                class="group flex items-center justify-between border-t border-[#1a1a1a]/10 py-6 md:py-9 gap-4 md:gap-8"
+                onMouseEnter={() => { setActiveWork(index()); onEnter('view'); }}
+                onMouseLeave={() => { setActiveWork(null); onLeave(); }}
               >
-                <div class="grid md:grid-cols-12 gap-4 items-center">
-                  <span class="md:col-span-1 text-xs opacity-40 font-mono">
+                <div class="flex items-baseline gap-4 md:gap-10 min-w-0">
+                  <span class="text-xs opacity-25 font-mono shrink-0 hidden sm:block">
                     {String(index() + 1).padStart(2, '0')}
                   </span>
-                  <h3 class="md:col-span-5 text-2xl md:text-4xl font-light tracking-tight group-hover:translate-x-4 transition-transform duration-500">
-                    {work.client}
-                  </h3>
-                  <span class="md:col-span-3 text-sm opacity-40">{work.type}</span>
-                  <span class="md:col-span-2 text-sm opacity-40">{work.year}</span>
-                  <div class="md:col-span-1 flex justify-end">
-                    <svg 
-                      class="w-5 h-5 opacity-0 group-hover:opacity-100 transition-all duration-300 -rotate-45 group-hover:rotate-0" 
-                      fill="none" 
-                      viewBox="0 0 24 24" 
-                      stroke="currentColor"
-                    >
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
-                    </svg>
+                  <div class="min-w-0">
+                    <h3 class="text-xl md:text-[2.5rem] font-light tracking-tight leading-none group-hover:translate-x-2 transition-transform duration-300 truncate">
+                      {work.client}
+                    </h3>
+                    <p class="text-xs md:text-sm opacity-30 mt-1.5">{work.type}</p>
                   </div>
                 </div>
-                
-                {/* Hover image preview - only updates when activeWork changes */}
-                <div 
-                  class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[500px] pointer-events-none z-30 hidden md:block"
-                  style={{
-                    opacity: activeWork() === index() ? 0.9 : 0,
-                    transform: `translate(-50%, -50%) scale(${activeWork() === index() ? 1 : 0.8})`,
-                    transition: 'opacity 0.5s ease, transform 0.5s ease'
-                  }}
-                >
-                  <img src={work.image} alt={work.client} class="w-full h-full object-cover" loading="lazy" />
+                <div class="flex items-center gap-4 md:gap-6 shrink-0">
+                  <span class="text-sm opacity-30 hidden md:block">{work.year}</span>
+                  <svg
+                    class="w-4 h-4 opacity-40 md:opacity-0 group-hover:opacity-60 transition-all duration-300 md:-translate-x-2 group-hover:translate-x-0 shrink-0"
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                  >
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
+                  </svg>
                 </div>
+
+                {/* Hover image preview — desktop only, not rendered on mobile */}
+                <Show when={activeWork() === index()}>
+                  <div
+                    class="fixed top-1/2 right-20 w-[300px] h-[400px] pointer-events-none z-30 hidden lg:block overflow-hidden"
+                    style={{
+                      transform: 'translateY(-50%)',
+                      animation: 'fadeIn 0.3s ease-out',
+                    }}
+                  >
+                    <img src={work.image} alt={work.client} class="w-full h-full object-cover" loading="lazy" />
+                  </div>
+                </Show>
               </A>
             )}
           </For>
         </div>
       </section>
 
-      {/* ---- ABOUT SECTION ---- */}
-      <section 
-        id="about" 
-        class="px-6 md:px-12 py-24 md:py-32 bg-[#1a1a1a] text-[#f8f7f4]"
-        classList={{ 'translate-y-0 opacity-100': visibleSections.about, 'translate-y-8 opacity-0': !visibleSections.about }}
-        style="transition: transform 0.8s ease-out, opacity 0.8s ease-out"
+      {/* Studio / About */}
+      <section
+        id="about"
+        class="px-6 md:px-12 py-20 md:py-32 bg-[#1a1a1a] text-[#f0ede8]"
+        classList={{ 'opacity-100': visibleSections.about, 'opacity-0': !visibleSections.about }}
+        style="transition: opacity 0.7s ease-out"
       >
-        <div class="grid md:grid-cols-12 gap-12 md:gap-8">
-          <div class="md:col-span-4 md:col-start-2">
-            <h2 class="text-xs uppercase tracking-[0.2em] opacity-40 mb-8">About</h2>
-            <p class="text-2xl md:text-3xl font-light leading-snug">
-              We're a small team obsessed with craft. No bloated processes, 
-              no account managers, no bullshit.
+        <div class="grid md:grid-cols-12 gap-10 md:gap-8">
+          <div class="md:col-span-5 md:col-start-2">
+            <h2 class="text-xs uppercase tracking-[0.2em] opacity-30 mb-8 md:mb-10">Studio</h2>
+            <p class="text-xl md:text-3xl font-light leading-[1.35] mb-6 md:mb-8">
+              Jonas Ek and Mara Voss. Berlin-based since 2019.
+              We are not a full-service agency and have no plans to become one.
+            </p>
+            <p class="text-sm leading-relaxed opacity-50">
+              We started Bureau because we were tired of studios that optimise for growth
+              over work. The math doesn't work — more clients means more project managers
+              means more process means worse output. We kept the team small on purpose.
+            </p>
+            <p class="text-sm leading-relaxed opacity-50 mt-4">
+              We focus on climate and deep tech because the stakes are higher and the
+              briefs are harder. Clients in these spaces tend to know what they're doing
+              technically. Our job is to make sure the world understands it too.
             </p>
           </div>
-          <div class="md:col-span-4 md:col-start-8 md:pt-32">
-            <p class="text-sm leading-relaxed opacity-60 mb-8">
-              Founded in 2019, Outline is an independent design studio working with 
-              select clients on projects that matter. We believe in substance over style, 
-              though we don't mind if both happen to coexist.
-            </p>
-            
-            {/* ---- SOLID FEATURE: Animated counters ---- */}
-            <div class="space-y-4 text-sm">
-              <For each={[
-                { label: 'Clients', value: 32 },
-                { label: 'Projects', value: 78 },
-                { label: 'Team', value: 6 },
-              ]}>
+          <div class="md:col-span-4 md:col-start-9 md:pt-20">
+            <div>
+              <For each={STATS}>
                 {(stat) => (
-                  <div class="flex justify-between border-b border-[#f8f7f4]/10 pb-4">
-                    <span class="opacity-40">{stat.label}</span>
+                  <div class="flex justify-between items-baseline border-b border-[#f0ede8]/10 py-4 md:py-5">
+                    <span class="text-sm opacity-40">{stat.label}</span>
                     <AnimatedNumber value={stat.value} active={visibleSections.about} />
                   </div>
                 )}
               </For>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ---- SERVICES SECTION ---- */}
-      <section 
-        id="services" 
-        class="px-6 md:px-12 py-24 md:py-32"
-        classList={{ 'opacity-100': visibleSections.services, 'opacity-0': !visibleSections.services }}
-        style="transition: opacity 0.6s ease-out"
-      >
-        <div class="grid md:grid-cols-12 gap-12">
-          <div class="md:col-span-3">
-            <h2 class="text-xs uppercase tracking-[0.2em] opacity-40 sticky top-24">Capabilities</h2>
-          </div>
-          <div class="md:col-span-6">
-            <div class="space-y-12">
-              <For each={[
-                { title: 'Brand Strategy', desc: 'Positioning, naming, verbal identity, brand architecture' },
-                { title: 'Visual Identity', desc: 'Logo systems, typography, color, iconography, guidelines' },
-                { title: 'Digital Design', desc: 'Websites, apps, digital products, design systems' },
-                { title: 'Art Direction', desc: 'Photography, motion, campaign development' },
-              ]}>
-                {(service) => (
-                  <div 
-                    class="group"
-                    onMouseEnter={() => handleCursorEnter('explore')}
-                    onMouseLeave={handleCursorLeave}
-                  >
-                    <h3 class="text-xl md:text-2xl font-light mb-2 group-hover:translate-x-2 transition-transform duration-300">
-                      {service.title}
-                    </h3>
-                    <p class="text-sm opacity-40">{service.desc}</p>
-                  </div>
-                )}
-              </For>
+            <div class="mt-8 md:mt-12">
+              <p class="text-xs uppercase tracking-[0.2em] opacity-30 mb-3 md:mb-4">Currently based</p>
+              <p class="text-sm opacity-60">Prenzlauer Berg, Berlin</p>
+              <p class="text-sm opacity-60">Available for projects from Q3 2025</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ---- CONTACT SECTION ---- */}
-      <section 
-        id="contact" 
-        class="px-6 md:px-12 py-24 md:py-32 border-t border-[#1a1a1a]/10"
-        classList={{ 'opacity-100': visibleSections.contact, 'opacity-0': !visibleSections.contact }}
-        style="transition: opacity 0.6s ease-out"
+      {/* Approach */}
+      <section
+        id="services"
+        class="px-6 md:px-12 py-20 md:py-32"
+        classList={{ 'opacity-100': visibleSections.services, 'opacity-0': !visibleSections.services }}
+        style="transition: opacity 0.7s ease-out"
       >
-        <div class="max-w-4xl">
-          <p class="text-sm opacity-40 mb-4">Got a project?</p>
-          <a 
-            href="mailto:hello@outline.studio" 
-            class="text-[clamp(2rem,8vw,6rem)] font-light leading-none tracking-tight hover:opacity-50 transition-opacity duration-300 block"
-            onMouseEnter={() => handleCursorEnter('email')}
-            onMouseLeave={handleCursorLeave}
-          >
-            Let's talk →
-          </a>
+        <div class="grid md:grid-cols-12 gap-10 md:gap-12">
+          <div class="md:col-span-3">
+            {/* On mobile show as inline label, on desktop sticky */}
+            <h2 class="text-xs uppercase tracking-[0.2em] opacity-30 md:sticky md:top-24">How we work</h2>
+          </div>
+          <div class="md:col-span-7">
+            <div>
+              <For each={PRINCIPLES}>
+                {(item, i) => (
+                  <div class="border-t border-[#1a1a1a]/10 py-7 md:py-8">
+                    <div class="flex gap-5 md:gap-10">
+                      <span class="text-xs font-mono opacity-20 pt-1 shrink-0">{String(i() + 1).padStart(2, '0')}</span>
+                      <div>
+                        <h3 class="text-base md:text-xl font-light mb-2 md:mb-3 leading-snug">{item.title}</h3>
+                        <p class="text-sm leading-relaxed opacity-40">{item.desc}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </For>
+            </div>
+
+            <div class="mt-12 pt-8 border-t border-[#1a1a1a]/10">
+              <p class="text-xs uppercase tracking-[0.2em] opacity-30 mb-5">What we do</p>
+              <div class="flex flex-wrap gap-2 md:gap-3">
+                <For each={CAPABILITIES}>
+                  {(cap) => (
+                    <span class="text-xs md:text-sm px-3 md:px-4 py-1.5 md:py-2 border border-[#1a1a1a]/15 rounded-full opacity-60">
+                      {cap}
+                    </span>
+                  )}
+                </For>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* ---- FOOTER ---- */}
-      <footer class="px-6 md:px-12 py-8 border-t border-[#1a1a1a]/10">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-          <div class="text-xs opacity-40">© 2024 Outline Studio</div>
-          <div class="flex gap-8 text-sm">
-            <For each={['Twitter', 'Instagram', 'LinkedIn']}>
-              {(social) => (
-                <a 
-                  href="#" 
-                  class="hover:opacity-50 transition-opacity"
-                  onMouseEnter={() => handleCursorEnter('link')}
-                  onMouseLeave={handleCursorLeave}
-                >
-                  {social}
-                </a>
-              )}
-            </For>
+      {/* Contact */}
+      <section
+        id="contact"
+        class="px-6 md:px-12 py-20 md:py-32 bg-[#1a1a1a] text-[#f0ede8]"
+        classList={{ 'opacity-100': visibleSections.contact, 'opacity-0': !visibleSections.contact }}
+        style="transition: opacity 0.7s ease-out"
+      >
+        <div class="grid md:grid-cols-12 gap-10 md:gap-8">
+          <div class="md:col-span-7 md:col-start-2">
+            <h2 class="text-xs uppercase tracking-[0.2em] opacity-30 mb-8 md:mb-10">New projects</h2>
+            <p class="text-xl md:text-3xl font-light leading-[1.35] mb-8 md:mb-10 opacity-80">
+              We take on four to six projects a year.
+              If you're building something that matters and need help
+              communicating it clearly — we'd like to hear about it.
+            </p>
+            <a
+              href="mailto:hello@bureau.studio"
+              class="inline-block text-[clamp(1.6rem,6vw,5rem)] font-light leading-none tracking-tight hover:opacity-50 transition-opacity duration-300 break-all"
+              onMouseEnter={() => onEnter('mail')}
+              onMouseLeave={onLeave}
+            >
+              hello@bureau.studio
+            </a>
           </div>
-          <div class="text-xs opacity-40">San Francisco, CA</div>
+          <div class="md:col-span-3 md:col-start-10 md:pt-32">
+            <div class="flex flex-row md:flex-col gap-8 md:gap-6 text-sm">
+              <div>
+                <p class="opacity-30 mb-1 text-xs uppercase tracking-wider">Studio</p>
+                <p class="opacity-60">Schönhauser Allee 36</p>
+                <p class="opacity-60">10435 Berlin</p>
+              </div>
+              <div>
+                <p class="opacity-30 mb-1 text-xs uppercase tracking-wider">Social</p>
+                <div class="flex flex-col gap-1">
+                  <For each={SOCIALS}>
+                    {(s) => (
+                      <a
+                        href="#"
+                        class="opacity-60 hover:opacity-100 transition-opacity w-fit"
+                        onMouseEnter={() => onEnter('link')}
+                        onMouseLeave={onLeave}
+                      >
+                        {s}
+                      </a>
+                    )}
+                  </For>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer class="px-6 md:px-12 py-6 border-t border-[#1a1a1a]/10">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-4">
+          <div class="text-xs opacity-25">© {new Date().getFullYear()} Bureau, Berlin</div>
+          <div class="text-xs opacity-25 font-mono hidden md:block">Brand & Digital for Climate & Deep Tech</div>
+          <div class="text-xs opacity-25">Jonas Ek · Mara Voss</div>
         </div>
       </footer>
     </div>
   );
 };
 
-// ============================================
-// SOLID FEATURE: Fine-grained component
-// Only this number re-renders, not the whole list
-// ============================================
 const AnimatedNumber: Component<{ value: number; active: boolean }> = (props) => {
   const [current, setCurrent] = createSignal(0);
-  
+
   createEffect(() => {
-    if (props.active && current() < props.value) {
+    // Always register cleanup regardless of branch
+    let interval: ReturnType<typeof setInterval> | undefined;
+
+    if (!props.active) {
+      setCurrent(0);
+    } else {
       const step = Math.ceil(props.value / 30);
-      const interval = setInterval(() => {
+      interval = setInterval(() => {
         setCurrent(prev => {
           const next = prev + step;
           if (next >= props.value) {
@@ -534,12 +485,12 @@ const AnimatedNumber: Component<{ value: number; active: boolean }> = (props) =>
           return next;
         });
       }, 30);
-      
-      onCleanup(() => clearInterval(interval));
     }
+
+    onCleanup(() => { if (interval) clearInterval(interval); });
   });
 
-  return <span>{current()}</span>;
+  return <span class="text-xl md:text-2xl font-light">{current()}</span>;
 };
 
 export default App;

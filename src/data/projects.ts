@@ -1,5 +1,4 @@
 export interface Project {
-  id: number;
   slug: string;
   client: string;
   type: string;
@@ -18,111 +17,118 @@ export interface Project {
 
 export const projects: Project[] = [
   {
-    id: 1,
-    slug: 'airframe',
-    client: 'Airframe',
+    slug: 'solaris',
+    client: 'Solaris',
     type: 'Brand Identity',
     year: '2024',
-    image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&q=80',
-    heroImage: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1920&q=90',
-    description: 'A complete brand overhaul for a next-generation aerospace startup revolutionizing sustainable air travel.',
-    challenge: 'Airframe needed to stand out in a crowded aerospace market while communicating their commitment to sustainability and innovation. Their existing brand felt dated and failed to capture the excitement of their technology.',
-    solution: 'We developed a dynamic visual identity system inspired by airflow patterns and aerodynamic forms. The logomark transforms based on context, representing the adaptability of their technology. A restrained color palette with bold accent colors conveys both professionalism and forward-thinking energy.',
+    // Solar farm aerial — vast, geometric, purposeful
+    image: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=800&q=80',
+    heroImage: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=1920&q=90',
+    description: 'Brand identity for a utility-scale solar infrastructure company operating across Central Europe.',
+    challenge: 'Solaris had closed a €120M Series C and needed a brand that could speak to institutional investors, municipal governments, and local communities simultaneously — three audiences with almost nothing in common. Their existing identity was a stock-photo logo and a WordPress site.',
+    solution: 'We built the identity around the idea of infrastructure as civic pride — something that belongs to a place rather than sitting on top of it. A geometric mark derived from photovoltaic cell geometry. A type system that reads equally well on a government tender document and a field signage post. Earth tones that age well in physical environments.',
     results: [
-      '340% increase in brand recognition',
-      'Successfully raised $50M Series B',
-      'Featured in Fast Company\'s Innovation by Design awards',
+      'Rebranded across 14 operational sites in 4 months',
+      'Supported €340M Series D raise six months post-launch',
+      'Brand guidelines adopted as internal design standard by two municipal energy partners',
     ],
     gallery: [
-      'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&q=80',
-      'https://images.unsplash.com/photo-1634017839464-5c339bbe3c35?w=1200&q=80',
-      'https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?w=1200&q=80',
+      // Solar panels at golden hour — warm, architectural
+      'https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?w=1200&q=80',
+      // Power lines against open sky — infrastructure, scale
+      'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=1200&q=80',
+      // Wind turbines at dawn — clean energy landscape
+      'https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=1200&q=80',
     ],
-    tags: ['Branding', 'Visual Identity', 'Strategy', 'Guidelines'],
-    nextProject: 'nomad',
-    prevProject: 'wavelength',
+    tags: ['Brand Identity', 'Type System', 'Environmental', 'Guidelines'],
+    nextProject: 'kin',
+    prevProject: 'havn',
   },
   {
-    id: 2,
-    slug: 'nomad',
-    client: 'Nomad',
-    type: 'Web Experience',
-    year: '2024',
-    image: 'https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?w=800&q=80',
-    heroImage: 'https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?w=1920&q=90',
-    description: 'An immersive digital platform for a travel company that curates extraordinary journeys for modern explorers.',
-    challenge: 'Nomad\'s previous website was a standard booking platform that failed to convey the unique, transformative nature of their travel experiences. They needed a digital presence that felt as inspiring as the journeys themselves.',
-    solution: 'We created an editorial-style experience that puts storytelling first. Full-bleed imagery, cinematic transitions, and thoughtful micro-interactions invite users to explore rather than simply browse. The booking flow was reimagined as a journey of discovery.',
-    results: [
-      '280% increase in time on site',
-      '156% improvement in conversion rate',
-      'Awwwards Site of the Day',
-    ],
-    gallery: [
-      'https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?w=1200&q=80',
-      'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1200&q=80',
-      'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1200&q=80',
-    ],
-    tags: ['Web Design', 'Development', 'UX Strategy', 'Motion'],
-    nextProject: 'terraform',
-    prevProject: 'airframe',
-  },
-  {
-    id: 3,
-    slug: 'terraform',
-    client: 'Terraform',
+    slug: 'kin',
+    client: 'Kin',
     type: 'Digital Product',
-    year: '2023',
-    image: 'https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?w=800&q=80',
-    heroImage: 'https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?w=1920&q=90',
-    description: 'A comprehensive design system and product redesign for an enterprise infrastructure platform.',
-    challenge: 'Terraform\'s product had grown organically over years, resulting in inconsistent interfaces and a steep learning curve. Enterprise customers needed a more intuitive experience without disrupting existing workflows.',
-    solution: 'We conducted extensive user research to understand pain points, then designed a modular component system that brought consistency while improving usability. A new information architecture reduced cognitive load and surfaced key actions contextually.',
+    year: '2024',
+    // Lab / biotech — clean white, precision instruments
+    image: 'https://images.unsplash.com/photo-1576086213369-97a306d36557?w=800&q=80',
+    heroImage: 'https://images.unsplash.com/photo-1576086213369-97a306d36557?w=1920&q=90',
+    description: 'Product design and design system for a longevity biotech platform that translates clinical biomarker data into actionable health protocols.',
+    challenge: 'Kin\'s product sits at the intersection of hard science and consumer behaviour — a genuinely difficult place to design for. The data is complex. The stakes feel high. And their users, despite being health-conscious, are not clinicians. Every earlier version of the product had defaulted to either cold medical UI or the hollow optimism of wellness apps. Neither worked.',
+    solution: 'We stripped the interface to its core job: help someone understand one thing clearly, then decide what to do about it. A strict typographic hierarchy does the heavy lifting. Data visualisations are calm, not dramatic. The colour system uses clinical white as a base with a single warm accent — enough to feel human without pretending the data is anything other than what it is.',
     results: [
-      '45% reduction in support tickets',
-      '60% faster onboarding for new users',
-      'NPS score improved from 32 to 67',
+      'Retention at 90 days increased from 34% to 71%',
+      'Average session time up 4.2× after redesign',
+      'Design system shipped across iOS, Android, and web in 11 weeks',
     ],
     gallery: [
-      'https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?w=1200&q=80',
+      // Microscope / lab research — scientific precision
+      'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?w=1200&q=80',
+      // Data on screens — analysis, clarity
       'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&q=80',
-      'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&q=80',
+      // DNA / molecule structure — biotech identity
+      'https://images.unsplash.com/photo-1614935151651-0bea6508db6b?w=1200&q=80',
     ],
-    tags: ['Product Design', 'Design System', 'UX Research', 'Prototyping'],
-    nextProject: 'wavelength',
-    prevProject: 'nomad',
+    tags: ['Product Design', 'Design System', 'iOS & Android', 'Data Visualisation'],
+    nextProject: 'conductor',
+    prevProject: 'solaris',
   },
   {
-    id: 4,
-    slug: 'wavelength',
-    client: 'Wavelength',
-    type: 'Art Direction',
+    slug: 'conductor',
+    client: 'Conductor',
+    type: 'Brand & Web',
     year: '2023',
-    image: 'https://images.unsplash.com/photo-1557672172-298e090bd0f1?w=800&q=80',
-    heroImage: 'https://images.unsplash.com/photo-1557672172-298e090bd0f1?w=1920&q=90',
-    description: 'Visual direction and campaign identity for an independent music label pushing the boundaries of electronic sound.',
-    challenge: 'Wavelength wanted to establish a distinct visual language that could flex across album artwork, merchandise, events, and digital content while maintaining a cohesive identity that resonated with their artist roster.',
-    solution: 'We developed a generative visual system rooted in audio visualization. Custom software translates sound frequencies into abstract forms, ensuring each release has unique artwork while remaining unmistakably Wavelength. The system extends to live visuals and environmental design.',
+    // Server / energy grid infrastructure — structured, technical
+    image: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&q=80',
+    heroImage: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1920&q=90',
+    description: 'Full brand and marketing site for a B2B SaaS platform that helps grid operators balance renewable energy loads in real time.',
+    challenge: 'Conductor\'s product does something genuinely important — it makes renewable energy grids more stable, which directly accelerates the retirement of gas peaker plants. But their brand looked like every other enterprise SaaS company from 2018. Dark mode dashboard screenshots, blue gradients, "AI-powered" in the headline. Nobody trusted it.',
+    solution: 'The new brand leads with the physical reality of energy infrastructure rather than software abstractions. Photography over illustration. Specificity over jargon. The website is structured around three buyer types — grid operators, energy traders, and regulators — each with a distinct entry point and evidence trail. The product screenshots are real. The case studies have named clients.',
     results: [
-      'Social following grew 420% in 6 months',
-      'Sold out 3 consecutive event series',
-      'Featured in It\'s Nice That and Creative Review',
+      'Inbound demo requests up 215% in first quarter post-launch',
+      'Average sales cycle shortened by 5 weeks',
+      'Landed two Tier 1 grid operator contracts within 90 days of launch',
     ],
     gallery: [
-      'https://images.unsplash.com/photo-1557672172-298e090bd0f1?w=1200&q=80',
-      'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=1200&q=80',
-      'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=1200&q=80',
+      // Control room — operators, screens, infrastructure management
+      'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=1200&q=80',
+      // High voltage power lines — energy grid, scale
+      'https://images.unsplash.com/photo-1497435334941-8c899ee9e8e9?w=1200&q=80',
+      // Server racks — backend infrastructure, precision
+      'https://images.unsplash.com/photo-1600267185393-1b14be5cf254?w=1200&q=80',
     ],
-    tags: ['Art Direction', 'Generative Design', 'Campaign', 'Motion'],
-    nextProject: 'airframe',
-    prevProject: 'terraform',
+    tags: ['Brand Identity', 'Web Design', 'Copywriting', 'Development'],
+    nextProject: 'havn',
+    prevProject: 'kin',
+  },
+  {
+    slug: 'havn',
+    client: 'Havn',
+    type: 'Brand Identity',
+    year: '2023',
+    // Electric vessel on water — clean, maritime, modern
+    image: 'https://images.unsplash.com/photo-1566438480900-0609be27a4be?w=800&q=80',
+    heroImage: 'https://images.unsplash.com/photo-1566438480900-0609be27a4be?w=1920&q=90',
+    description: 'Brand identity for a Scandinavian startup building electric passenger ferries for urban coastal routes.',
+    challenge: 'Maritime branding has two defaults: nautical heritage (anchors, rope, navy blue) or tech-startup futurism (gradients, sans-serif everything, "revolutionizing"). Havn wanted neither. They are a serious engineering company that also happens to care deeply about how their vessels feel to ride — the experience of crossing a fjord quietly, without exhaust fumes, at 6am.',
+    solution: 'The identity is built around the Norwegian concept of "ro" — a word that means both calm and the act of rowing. Quiet confidence. The wordmark is set in a custom-modified serif, slightly condensed, with just enough weight to hold up on the hull of a 40-metre vessel. The palette is fog, slate, and a single copper accent pulled from traditional maritime hardware.',
+    results: [
+      'Identity rolled out across first three vessels on schedule',
+      'Featured in Wallpaper* and Dezeen within two months of launch',
+      'Secured naming partnership with Bergen municipality',
+    ],
+    gallery: [
+      // Calm fjord at dawn — stillness, nordic light
+      'https://images.unsplash.com/photo-1531804055935-76f44d7c3621?w=1200&q=80',
+      // Harbour / dock detail — maritime texture
+      'https://images.unsplash.com/photo-1504615458222-979e04d69a27?w=1200&q=80',
+      // Ocean horizon from deck — vastness, travel
+      'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=1200&q=80',
+    ],
+    tags: ['Brand Identity', 'Custom Type', 'Environmental', 'Maritime'],
+    nextProject: 'solaris',
+    prevProject: 'conductor',
   },
 ];
 
-export const getProjectBySlug = (slug: string): Project | undefined => {
-  return projects.find(p => p.slug === slug);
-};
-
-export const getProjectIndex = (slug: string): number => {
-  return projects.findIndex(p => p.slug === slug);
-};
+export const getProjectBySlug = (slug: string): Project | undefined =>
+  projects.find(p => p.slug === slug);

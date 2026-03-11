@@ -1,190 +1,182 @@
-import { Component, createSignal, createEffect, onMount, onCleanup, Show, For } from 'solid-js';
+import { Component, createSignal, createEffect, createMemo, onMount, onCleanup, Show, For, batch } from 'solid-js';
 import { useParams, A, useNavigate } from '@solidjs/router';
-import { createStore } from 'solid-js/store';
-import { getProjectBySlug, type Project } from '../data/projects';
+import { Title, Meta } from '@solidjs/meta';
+import { getProjectBySlug, projects, type Project } from '../data/projects';
+import { useCursor } from '../hooks/useCursor';
 
 const ProjectPage: Component = () => {
   const params = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  
+  const { hovering, onEnter, onLeave, cursorStyle } = useCursor();
+
   const [project, setProject] = createSignal<Project | undefined>();
   const [imageLoaded, setImageLoaded] = createSignal(false);
   const [scrollY, setScrollY] = createSignal(0);
-  
-  // Cursor state
-  const [cursor, setCursor] = createStore({
-    x: 0,
-    y: 0,
-    hovering: null as string | null
-  });
+  const [scrollProgress, setScrollProgress] = createSignal(0);
 
-  // Load project when slug changes
+  // batch prevents two renders when slug changes
   createEffect(() => {
     const p = getProjectBySlug(params.slug);
     if (p) {
-      setProject(p);
-      setImageLoaded(false);
+      batch(() => {
+        setProject(p);
+        setImageLoaded(false);
+      });
       window.scrollTo(0, 0);
     } else {
       navigate('/', { replace: true });
     }
   });
 
-  let rafId: number;
-  
   onMount(() => {
-    const handleMouse = (e: MouseEvent) => {
-      cancelAnimationFrame(rafId);
-      rafId = requestAnimationFrame(() => {
-        setCursor('x', e.clientX);
-        setCursor('y', e.clientY);
+    const handleScroll = () => {
+      const y = window.scrollY;
+      const maxScroll = document.body.scrollHeight - window.innerHeight;
+      batch(() => {
+        setScrollY(y);
+        setScrollProgress(maxScroll > 0 ? y / maxScroll : 0);
       });
     };
-    
-    const handleScroll = () => {
-      setScrollY(window.scrollY);
-    };
-    
-    window.addEventListener('mousemove', handleMouse);
     window.addEventListener('scroll', handleScroll, { passive: true });
-    
-    onCleanup(() => {
-      window.removeEventListener('mousemove', handleMouse);
-      window.removeEventListener('scroll', handleScroll);
-      cancelAnimationFrame(rafId);
-    });
+    onCleanup(() => window.removeEventListener('scroll', handleScroll));
   });
 
-  const handleCursorEnter = (type: string) => setCursor('hovering', type);
-  const handleCursorLeave = () => setCursor('hovering', null);
+  const heroParallax = createMemo(() => `translateY(${scrollY() * 0.25}px)`);
+  const heroOpacity = createMemo(() => Math.max(0, 1 - scrollY() / 700));
 
-  // Parallax for hero image
-  const heroTransform = () => `translateY(${scrollY() * 0.3}px)`;
-  const heroOpacity = () => Math.max(0, 1 - scrollY() / 600);
+  const prevProject = createMemo(() => projects.find(p => p.slug === project()?.prevProject));
+  const nextProject = createMemo(() => projects.find(p => p.slug === project()?.nextProject));
 
   return (
-    <Show when={project()} fallback={<div class="min-h-screen bg-[#f8f7f4]" />}>
+    <Show when={project()} fallback={<div class="min-h-screen bg-[#f0ede8]" />}>
       {(proj) => (
-        <div class="min-h-screen bg-[#f8f7f4] text-[#1a1a1a]">
-          
-          {/* Custom cursor */}
-          <div 
-            class="fixed rounded-full pointer-events-none z-[100] mix-blend-difference hidden md:flex items-center justify-center transition-[width,height,background,border] duration-200 ease-out"
-            style={{
-              left: `${cursor.x - (cursor.hovering ? 25 : 10)}px`,
-              top: `${cursor.y - (cursor.hovering ? 25 : 10)}px`,
-              width: cursor.hovering ? '50px' : '20px',
-              height: cursor.hovering ? '50px' : '20px',
-              background: cursor.hovering ? 'rgba(255,255,255,0.1)' : 'white',
-              border: cursor.hovering ? '1px solid white' : 'none',
-            }}
+        <div class="min-h-screen bg-[#f0ede8] text-[#1a1a1a]">
+          <Title>{proj().client} — Bureau</Title>
+          <Meta name="description" content={proj().description} />
+          <Meta property="og:site_name" content="Bureau" />
+          <Meta property="og:title" content={`${proj().client} — Bureau`} />
+          <Meta property="og:description" content={proj().description} />
+          <Meta property="og:type" content="article" />
+          <Meta property="og:url" content={`https://solid-studio-zeta.vercel.app/project/${proj().slug}`} />
+          <Meta property="og:image" content={proj().heroImage} />
+          <Meta property="og:image:alt" content={`${proj().client} — Bureau project`} />
+          <Meta name="twitter:card" content="summary_large_image" />
+          <Meta name="twitter:title" content={`${proj().client} — Bureau`} />
+          <Meta name="twitter:description" content={proj().description} />
+          <Meta name="twitter:image" content={proj().heroImage} />
+
+          {/* Scroll progress */}
+          <div
+            class="fixed top-0 left-0 h-[1px] bg-[#1a1a1a] z-[200]"
+            style={`width: ${scrollProgress() * 100}%`}
+          />
+
+          {/* Custom cursor — desktop only */}
+          <div
+            class="fixed rounded-full pointer-events-none z-[100] hidden md:flex items-center justify-center mix-blend-difference transition-[width,height,background,border] duration-200 ease-out"
+            style={cursorStyle()}
           >
-            <Show when={cursor.hovering}>
-              <span class="text-[8px] uppercase tracking-widest text-white opacity-70">
-                {cursor.hovering}
+            <Show when={hovering()}>
+              <span class="text-[7px] uppercase tracking-widest text-white opacity-80 select-none">
+                {hovering()}
               </span>
             </Show>
           </div>
 
           {/* Header */}
-          <header class="fixed top-0 left-0 right-0 z-40 mix-blend-difference">
-            <nav class="flex justify-between items-center px-6 md:px-12 py-6">
-              <A 
-                href="/" 
-                class="text-[#f8f7f4] font-medium tracking-tight text-lg"
-                onMouseEnter={() => handleCursorEnter('home')}
-                onMouseLeave={handleCursorLeave}
+          <header class="fixed top-0 left-0 right-0 z-40 bg-[#f0ede8]/80 backdrop-blur-sm border-b border-[#1a1a1a]/5">
+            <nav class="flex justify-between items-center px-6 md:px-12 py-5">
+              <A
+                href="/"
+                class="font-medium tracking-tight text-lg"
+                onMouseEnter={() => onEnter('home')}
+                onMouseLeave={onLeave}
               >
-                Outline°
+                Bureau
               </A>
-              <A 
-                href="/#work" 
-                class="text-[#f8f7f4] text-sm hover:opacity-60 transition-opacity"
-                onMouseEnter={() => handleCursorEnter('back')}
-                onMouseLeave={handleCursorLeave}
+              <A
+                href="/"
+                class="text-sm opacity-40 hover:opacity-100 transition-opacity py-1"
+                onMouseEnter={() => onEnter('work')}
+                onMouseLeave={onLeave}
               >
-                ← All Work
+                ← Work
               </A>
             </nav>
           </header>
 
-          {/* Hero */}
-          <section class="relative h-screen overflow-hidden">
-            <div 
-              class="absolute inset-0 transition-opacity duration-700"
-              style={{ 
-                transform: heroTransform(),
-                opacity: heroOpacity()
-              }}
+          {/* Hero — full bleed, parallax, gradient overlay */}
+          <section class="relative h-[100svh] overflow-hidden">
+            <div
+              class="absolute inset-0"
+              style={{ transform: heroParallax(), opacity: heroOpacity() }}
             >
-              <img 
-                src={proj().heroImage} 
+              <img
+                src={proj().heroImage}
                 alt={proj().client}
-                class={`w-full h-full object-cover transition-opacity duration-1000 ${imageLoaded() ? 'opacity-100' : 'opacity-0'}`}
+                classList={{
+                  'w-full h-[115%] object-cover transition-opacity duration-1000': true,
+                  'opacity-100': imageLoaded(),
+                  'opacity-0': !imageLoaded(),
+                }}
                 onLoad={() => setImageLoaded(true)}
               />
-              <div class="absolute inset-0 bg-black/30" />
-            </div>
-            
-            <div class="relative z-10 h-full flex flex-col justify-end px-6 md:px-12 pb-16 text-white">
-              <div class="max-w-4xl">
-                <div class="flex items-center gap-4 mb-6 text-sm opacity-60">
-                  <span>{proj().type}</span>
-                  <span>—</span>
-                  <span>{proj().year}</span>
-                </div>
-                <h1 
-                  class="text-[clamp(3rem,10vw,8rem)] font-light leading-[0.9] tracking-[-0.03em] mb-6"
-                  style="animation: slideUp 0.8s ease-out 0.2s both"
-                >
-                  {proj().client}
-                </h1>
-                <p 
-                  class="text-lg md:text-xl max-w-2xl opacity-80 font-light"
-                  style="animation: slideUp 0.8s ease-out 0.4s both"
-                >
-                  {proj().description}
-                </p>
-              </div>
+              <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-black/10" />
             </div>
 
-            {/* Scroll indicator */}
-            <div class="absolute bottom-8 left-1/2 -translate-x-1/2 text-white opacity-60 animate-bounce">
-              <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-              </svg>
+            <div class="relative z-10 h-full flex flex-col justify-end px-6 md:px-12 pb-10 md:pb-14">
+              <div class="flex items-center gap-3 mb-4 text-xs text-white/50 font-mono uppercase tracking-widest">
+                <span>{proj().type}</span>
+                <span>·</span>
+                <span>{proj().year}</span>
+              </div>
+              <h1
+                class="text-[clamp(2.8rem,10vw,8rem)] font-light leading-[0.88] tracking-[-0.04em] text-white mb-4 md:mb-0"
+                style="animation: slideUp 0.7s ease-out 0.1s both"
+              >
+                {proj().client}
+              </h1>
+              <p
+                class="text-sm leading-relaxed text-white/60 max-w-sm mt-4 md:mt-5"
+                style="animation: slideUp 0.7s ease-out 0.25s both"
+              >
+                {proj().description}
+              </p>
             </div>
           </section>
 
-          {/* Project Info */}
-          <section class="px-6 md:px-12 py-24 md:py-32">
-            <div class="grid md:grid-cols-12 gap-12 md:gap-8 max-w-7xl mx-auto">
-              {/* Tags */}
-              <div class="md:col-span-3">
-                <h2 class="text-xs uppercase tracking-[0.2em] opacity-40 mb-4">Services</h2>
-                <div class="flex flex-wrap gap-2">
+          {/* Project brief */}
+          <section class="px-6 md:px-12 py-16 md:py-28 border-b border-[#1a1a1a]/8">
+            {/* Tags — horizontal on mobile, vertical column on desktop */}
+            <div class="flex flex-wrap gap-x-4 gap-y-1 mb-10 md:hidden">
+              <For each={proj().tags}>
+                {(tag) => (
+                  <span class="text-[11px] uppercase tracking-widest opacity-30 font-mono">{tag}</span>
+                )}
+              </For>
+            </div>
+
+            <div class="grid md:grid-cols-12 gap-10 md:gap-8">
+              <div class="hidden md:block md:col-span-1">
+                <div class="flex flex-col gap-2">
                   <For each={proj().tags}>
                     {(tag) => (
-                      <span class="text-sm px-3 py-1 border border-[#1a1a1a]/20 rounded-full">
-                        {tag}
-                      </span>
+                      <span class="text-[11px] uppercase tracking-widest opacity-30 font-mono">{tag}</span>
                     )}
                   </For>
                 </div>
               </div>
 
-              {/* Challenge */}
-              <div class="md:col-span-4">
-                <h2 class="text-xs uppercase tracking-[0.2em] opacity-40 mb-4">The Challenge</h2>
-                <p class="text-lg leading-relaxed opacity-70">
+              <div class="md:col-span-5 md:col-start-3">
+                <p class="text-xs uppercase tracking-[0.2em] opacity-30 mb-5 md:mb-6">The situation</p>
+                <p class="text-lg md:text-2xl font-light leading-[1.5] opacity-80">
                   {proj().challenge}
                 </p>
               </div>
 
-              {/* Solution */}
-              <div class="md:col-span-5">
-                <h2 class="text-xs uppercase tracking-[0.2em] opacity-40 mb-4">Our Approach</h2>
-                <p class="text-lg leading-relaxed opacity-70">
+              <div class="md:col-span-4 md:col-start-9 md:pt-10">
+                <p class="text-xs uppercase tracking-[0.2em] opacity-30 mb-5 md:mb-6">What we did</p>
+                <p class="text-sm leading-relaxed opacity-50">
                   {proj().solution}
                 </p>
               </div>
@@ -192,39 +184,85 @@ const ProjectPage: Component = () => {
           </section>
 
           {/* Gallery */}
-          <section class="px-6 md:px-12 py-12">
-            <div class="max-w-7xl mx-auto space-y-4">
+          <section class="px-6 md:px-12 py-12 md:py-16">
+            {/* Mobile: stacked full-width images at natural aspect ratio */}
+            <div class="flex flex-col gap-3 md:hidden">
               <For each={proj().gallery}>
                 {(image, index) => (
-                  <div 
-                    class="overflow-hidden rounded-lg"
-                    onMouseEnter={() => handleCursorEnter('view')}
-                    onMouseLeave={handleCursorLeave}
-                  >
-                    <img 
-                      src={image} 
-                      alt={`${proj().client} - Image ${index() + 1}`}
-                      class="w-full h-auto hover:scale-105 transition-transform duration-700"
-                      loading="lazy"
-                    />
-                  </div>
+                  <img
+                    src={image}
+                    alt={`${proj().client} ${String(index() + 1).padStart(2, '0')}`}
+                    class="w-full h-auto object-cover"
+                    loading="lazy"
+                  />
                 )}
               </For>
+            </div>
+
+            {/* Desktop: asymmetric grid */}
+            <div class="hidden md:grid md:grid-cols-12 gap-4">
+              <div
+                class="md:col-span-12 overflow-hidden"
+                onMouseEnter={() => onEnter('view')}
+                onMouseLeave={onLeave}
+              >
+                <img
+                  src={proj().gallery[0]}
+                  alt={`${proj().client} 01`}
+                  class="w-full h-[60vh] object-cover hover:scale-[1.02] transition-transform duration-700"
+                  loading="lazy"
+                />
+              </div>
+
+              <Show when={proj().gallery[1]}>
+                <div
+                  class="md:col-span-7 overflow-hidden"
+                  onMouseEnter={() => onEnter('view')}
+                  onMouseLeave={onLeave}
+                >
+                  <img
+                    src={proj().gallery[1]}
+                    alt={`${proj().client} 02`}
+                    class="w-full h-[50vh] object-cover hover:scale-[1.02] transition-transform duration-700"
+                    loading="lazy"
+                  />
+                </div>
+              </Show>
+
+              <Show when={proj().gallery[2]}>
+                <div
+                  class="md:col-span-5 overflow-hidden mt-16"
+                  onMouseEnter={() => onEnter('view')}
+                  onMouseLeave={onLeave}
+                >
+                  <img
+                    src={proj().gallery[2]}
+                    alt={`${proj().client} 03`}
+                    class="w-full h-[40vh] object-cover hover:scale-[1.02] transition-transform duration-700"
+                    loading="lazy"
+                  />
+                </div>
+              </Show>
             </div>
           </section>
 
           {/* Results */}
-          <section class="px-6 md:px-12 py-24 md:py-32 bg-[#1a1a1a] text-[#f8f7f4]">
-            <div class="max-w-7xl mx-auto">
-              <h2 class="text-xs uppercase tracking-[0.2em] opacity-40 mb-12">Results</h2>
-              <div class="grid md:grid-cols-3 gap-8">
+          <section class="px-6 md:px-12 py-16 md:py-28 bg-[#1a1a1a] text-[#f0ede8]">
+            <div class="grid md:grid-cols-12 gap-8">
+              <div class="md:col-span-2 md:col-start-2">
+                <p class="text-xs uppercase tracking-[0.2em] opacity-30 mb-6 md:mb-0">Outcomes</p>
+              </div>
+              <div class="md:col-span-8 md:col-start-4">
                 <For each={proj().results}>
                   {(result, index) => (
-                    <div 
-                      class="border-l border-[#f8f7f4]/20 pl-6"
-                      style={`animation: slideUp 0.6s ease-out ${index() * 0.1}s both`}
+                    <div
+                      class="flex gap-5 md:gap-10 items-baseline border-t border-[#f0ede8]/10 py-6 md:py-7"
+                      style={`animation: slideUp 0.5s ease-out ${index() * 0.08}s both`}
                     >
-                      <p class="text-xl md:text-2xl font-light">{result}</p>
+                      <span class="text-xs font-mono opacity-20 shrink-0">
+                        {String(index() + 1).padStart(2, '0')}
+                      </span>
+                      <p class="text-base md:text-xl font-light leading-snug opacity-80">{result}</p>
                     </div>
                   )}
                 </For>
@@ -232,65 +270,54 @@ const ProjectPage: Component = () => {
             </div>
           </section>
 
-          {/* Navigation */}
-          <section class="px-6 md:px-12 py-16 border-t border-[#1a1a1a]/10">
-            <div class="max-w-7xl mx-auto flex justify-between items-center">
-              <A 
-                href={`/project/${proj().prevProject}`}
-                class="group flex items-center gap-4 text-sm hover:opacity-60 transition-opacity"
-                onMouseEnter={() => handleCursorEnter('prev')}
-                onMouseLeave={handleCursorLeave}
-              >
-                <svg class="w-5 h-5 group-hover:-translate-x-2 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-                <span class="hidden md:inline">Previous Project</span>
-              </A>
+          {/* Prev / Next nav */}
+          <section class="px-6 md:px-12 py-12 md:py-16">
+            <div class="grid grid-cols-2 gap-3 md:gap-4">
+              <Show when={prevProject()}>
+                {(prev) => (
+                  <A
+                    href={`/project/${prev().slug}`}
+                    class="group flex flex-col gap-2 md:gap-3 p-4 md:p-6 border border-[#1a1a1a]/10 hover:border-[#1a1a1a]/30 transition-colors duration-300"
+                    onMouseEnter={() => onEnter('prev')}
+                    onMouseLeave={onLeave}
+                  >
+                    <span class="text-[10px] md:text-xs uppercase tracking-[0.2em] opacity-30">← Previous</span>
+                    <span class="text-base md:text-2xl font-light tracking-tight group-hover:translate-x-1 transition-transform duration-300 leading-tight">
+                      {prev().client}
+                    </span>
+                    <span class="text-[10px] md:text-xs opacity-30 hidden sm:block">{prev().type}</span>
+                  </A>
+                )}
+              </Show>
 
-              <A 
-                href="/#work"
-                class="text-xs uppercase tracking-[0.2em] opacity-40 hover:opacity-100 transition-opacity"
-                onMouseEnter={() => handleCursorEnter('all')}
-                onMouseLeave={handleCursorLeave}
-              >
-                All Projects
-              </A>
-
-              <A 
-                href={`/project/${proj().nextProject}`}
-                class="group flex items-center gap-4 text-sm hover:opacity-60 transition-opacity"
-                onMouseEnter={() => handleCursorEnter('next')}
-                onMouseLeave={handleCursorLeave}
-              >
-                <span class="hidden md:inline">Next Project</span>
-                <svg class="w-5 h-5 group-hover:translate-x-2 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
-              </A>
+              <Show when={nextProject()}>
+                {(next) => (
+                  <A
+                    href={`/project/${next().slug}`}
+                    class="group flex flex-col gap-2 md:gap-3 p-4 md:p-6 border border-[#1a1a1a]/10 hover:border-[#1a1a1a]/30 transition-colors duration-300 items-end text-right"
+                    onMouseEnter={() => onEnter('next')}
+                    onMouseLeave={onLeave}
+                  >
+                    <span class="text-[10px] md:text-xs uppercase tracking-[0.2em] opacity-30">Next →</span>
+                    <span class="text-base md:text-2xl font-light tracking-tight group-hover:translate-x-1 transition-transform duration-300 leading-tight">
+                      {next().client}
+                    </span>
+                    <span class="text-[10px] md:text-xs opacity-30 hidden sm:block">{next().type}</span>
+                  </A>
+                )}
+              </Show>
             </div>
           </section>
 
           {/* Footer */}
-          <footer class="px-6 md:px-12 py-8 border-t border-[#1a1a1a]/10">
-            <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-              <div class="text-xs opacity-40">© 2024 Outline Studio</div>
-              <div class="flex gap-8 text-sm">
-                <For each={['Twitter', 'Instagram', 'LinkedIn']}>
-                  {(social) => (
-                    <a 
-                      href="#" 
-                      class="hover:opacity-50 transition-opacity"
-                      onMouseEnter={() => handleCursorEnter('link')}
-                      onMouseLeave={handleCursorLeave}
-                    >
-                      {social}
-                    </a>
-                  )}
-                </For>
-              </div>
-              <div class="text-xs opacity-40">San Francisco, CA</div>
+          <footer class="px-6 md:px-12 py-6 border-t border-[#1a1a1a]/10">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-4">
+              <div class="text-xs opacity-25">© {new Date().getFullYear()} Bureau, Berlin</div>
+              <div class="text-xs opacity-25 font-mono hidden md:block">Brand & Digital for Climate & Deep Tech</div>
+              <div class="text-xs opacity-25">Jonas Ek · Mara Voss</div>
             </div>
           </footer>
+
         </div>
       )}
     </Show>

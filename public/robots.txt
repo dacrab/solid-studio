@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://solid-studio-zeta.vercel.app/sitemap.xml

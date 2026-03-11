@@ -1,79 +1,57 @@
 @import "tailwindcss";
 
-/* Instrument Serif for editorial italic headlines */
-@font-face {
-  font-family: 'Instrument Serif';
-  src: url('https://fonts.gstatic.com/s/instrumentserif/v4/jizBRFtNs2ka5fXjeivQ4LroWlx-2zIZjQ.woff2') format('woff2');
-  font-weight: 400;
-  font-style: italic;
-  font-display: swap;
-}
+/* Instrument Serif — editorial italic headlines, loaded via Google Fonts in index.html */
 
-/* Base styles */
+/* Base */
 html {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  scroll-behavior: smooth;
-}
-
-/* Hide default cursor on desktop for custom cursor */
-@media (min-width: 768px) {
-  html { cursor: none; }
-  a, button { cursor: none; }
 }
 
 body {
-  background-color: #f8f7f4;
+  background-color: #f0ede8;
   color: #1a1a1a;
   line-height: 1.5;
 }
 
-/* Serif italic for editorial feel */
+/* Hide default cursor on desktop — custom cursor active */
+@media (min-width: 768px) {
+  html, a, button { cursor: none; }
+}
+
+/* Serif italic for editorial headlines */
 .italic {
   font-family: 'Instrument Serif', 'Georgia', serif;
   font-style: italic;
 }
 
-/* Vertical text for scroll indicator */
-.writing-vertical {
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-}
-
 /* Selection */
 ::selection {
   background: #1a1a1a;
-  color: #f8f7f4;
+  color: #f0ede8;
 }
 
-/* Hide scrollbar */
+/* No scrollbar */
 ::-webkit-scrollbar {
-  width: 0;
-  height: 0;
+  display: none;
 }
 
-/* Focus states */
+/* Focus — keyboard nav */
 a:focus-visible,
 button:focus-visible {
   outline: 1px solid #1a1a1a;
-  outline-offset: 2px;
+  outline-offset: 3px;
 }
 
-/* Menu animations */
+/* Animations */
 @keyframes fadeIn {
   from { opacity: 0; }
-  to { opacity: 1; }
+  to   { opacity: 1; }
 }
 
 @keyframes slideUp {
-  from { 
-    opacity: 0; 
-    transform: translateY(30px); 
-  }
-  to { 
-    opacity: 1; 
-    transform: translateY(0); 
-  }
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
