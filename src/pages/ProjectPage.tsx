@@ -2,12 +2,10 @@ import { Component, createSignal, createEffect, createMemo, onMount, onCleanup, 
 import { useParams, A, useNavigate } from '@solidjs/router';
 import { Title, Meta } from '@solidjs/meta';
 import { getProjectBySlug, projects, type Project } from '../data/projects';
-import { useCursor } from '../hooks/useCursor';
 
 const ProjectPage: Component = () => {
   const params = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const { hovering, onEnter, onLeave, cursorStyle } = useCursor();
 
   const [project, setProject] = createSignal<Project | undefined>();
   const [imageLoaded, setImageLoaded] = createSignal(false);
@@ -71,17 +69,6 @@ const ProjectPage: Component = () => {
             style={`width: ${scrollProgress() * 100}%`}
           />
 
-          {/* Custom cursor — desktop only */}
-          <div
-            class="fixed rounded-full pointer-events-none z-[100] hidden md:flex items-center justify-center mix-blend-difference transition-[width,height,background,border] duration-200 ease-out"
-            style={cursorStyle()}
-          >
-            <Show when={hovering()}>
-              <span class="text-[7px] uppercase tracking-widest text-white opacity-80 select-none">
-                {hovering()}
-              </span>
-            </Show>
-          </div>
 
           {/* Header */}
           <header class="fixed top-0 left-0 right-0 z-40 bg-[#f0ede8]/80 backdrop-blur-sm border-b border-[#1a1a1a]/5">
@@ -89,16 +76,12 @@ const ProjectPage: Component = () => {
               <A
                 href="/"
                 class="font-medium tracking-tight text-lg"
-                onMouseEnter={() => onEnter('home')}
-                onMouseLeave={onLeave}
               >
                 Bureau
               </A>
               <A
                 href="/"
                 class="text-sm opacity-40 hover:opacity-100 transition-opacity py-1"
-                onMouseEnter={() => onEnter('work')}
-                onMouseLeave={onLeave}
               >
                 ← Work
               </A>
@@ -203,8 +186,6 @@ const ProjectPage: Component = () => {
             <div class="hidden md:grid md:grid-cols-12 gap-4">
               <div
                 class="md:col-span-12 overflow-hidden"
-                onMouseEnter={() => onEnter('view')}
-                onMouseLeave={onLeave}
               >
                 <img
                   src={proj().gallery[0]}
@@ -217,8 +198,6 @@ const ProjectPage: Component = () => {
               <Show when={proj().gallery[1]}>
                 <div
                   class="md:col-span-7 overflow-hidden"
-                  onMouseEnter={() => onEnter('view')}
-                  onMouseLeave={onLeave}
                 >
                   <img
                     src={proj().gallery[1]}
@@ -232,8 +211,6 @@ const ProjectPage: Component = () => {
               <Show when={proj().gallery[2]}>
                 <div
                   class="md:col-span-5 overflow-hidden mt-16"
-                  onMouseEnter={() => onEnter('view')}
-                  onMouseLeave={onLeave}
                 >
                   <img
                     src={proj().gallery[2]}
@@ -278,8 +255,6 @@ const ProjectPage: Component = () => {
                   <A
                     href={`/project/${prev().slug}`}
                     class="group flex flex-col gap-2 md:gap-3 p-4 md:p-6 border border-[#1a1a1a]/10 hover:border-[#1a1a1a]/30 transition-colors duration-300"
-                    onMouseEnter={() => onEnter('prev')}
-                    onMouseLeave={onLeave}
                   >
                     <span class="text-[10px] md:text-xs uppercase tracking-[0.2em] opacity-30">← Previous</span>
                     <span class="text-base md:text-2xl font-light tracking-tight group-hover:translate-x-1 transition-transform duration-300 leading-tight">
@@ -295,8 +270,6 @@ const ProjectPage: Component = () => {
                   <A
                     href={`/project/${next().slug}`}
                     class="group flex flex-col gap-2 md:gap-3 p-4 md:p-6 border border-[#1a1a1a]/10 hover:border-[#1a1a1a]/30 transition-colors duration-300 items-end text-right"
-                    onMouseEnter={() => onEnter('next')}
-                    onMouseLeave={onLeave}
                   >
                     <span class="text-[10px] md:text-xs uppercase tracking-[0.2em] opacity-30">Next →</span>
                     <span class="text-base md:text-2xl font-light tracking-tight group-hover:translate-x-1 transition-transform duration-300 leading-tight">

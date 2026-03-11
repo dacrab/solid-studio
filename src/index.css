@@ -16,10 +16,6 @@ body {
   line-height: 1.5;
 }
 
-/* Hide default cursor on desktop — custom cursor active */
-@media (min-width: 768px) {
-  html, a, button { cursor: none; }
-}
 
 /* Serif italic for editorial headlines */
 .italic {

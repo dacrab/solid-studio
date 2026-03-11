@@ -11,7 +11,6 @@ import { createStore } from 'solid-js/store';
 import { A } from '@solidjs/router';
 import { Title, Meta } from '@solidjs/meta';
 import { projects } from './data/projects';
-import { useCursor } from './hooks/useCursor';
 
 const NAV_LINKS = [
   { name: 'Work', href: '#work' },
@@ -51,8 +50,6 @@ const CAPABILITIES = [
 ] as const;
 
 const App: Component = () => {
-  const { hovering, onEnter, onLeave, cursorStyle } = useCursor();
-
   const [time, setTime] = createSignal('');
   const [activeWork, setActiveWork] = createSignal<number | null>(null);
   const [menuOpen, setMenuOpen] = createSignal(false);
@@ -115,18 +112,6 @@ const App: Component = () => {
         style={`width: ${scrollProgress() * 100}%`}
       />
 
-      {/* Custom cursor — desktop only, mix-blend-difference inverts on any bg */}
-      <div
-        class="fixed rounded-full pointer-events-none z-[100] hidden md:flex items-center justify-center mix-blend-difference transition-[width,height,background,border] duration-200 ease-out"
-        style={cursorStyle()}
-      >
-        <Show when={hovering()}>
-          <span class="text-[7px] uppercase tracking-widest text-white opacity-80 select-none">
-            {hovering()}
-          </span>
-        </Show>
-      </div>
-
       {/* Menu overlay */}
       <Show when={menuOpen()}>
         <div
@@ -138,8 +123,6 @@ const App: Component = () => {
             <button
               class="text-[#f0ede8] text-sm opacity-60 hover:opacity-100 transition-opacity py-2 px-1"
               onClick={() => setMenuOpen(false)}
-              onMouseEnter={() => onEnter('close')}
-              onMouseLeave={onLeave}
             >
               Close
             </button>
@@ -152,8 +135,6 @@ const App: Component = () => {
                   href={item.href}
                   class="group flex items-baseline gap-4 md:gap-6 text-[#f0ede8] text-[clamp(2rem,9vw,6rem)] font-light leading-none tracking-tight py-3 border-b border-[#f0ede8]/10 hover:border-[#f0ede8]/30 transition-colors duration-300"
                   onClick={() => setMenuOpen(false)}
-                  onMouseEnter={() => onEnter('go')}
-                  onMouseLeave={onLeave}
                   style={`animation: slideUp 0.35s ease-out ${i() * 0.06}s both`}
                 >
                   <span class="text-[#f0ede8]/20 text-xs font-mono w-5 shrink-0">{String(i() + 1).padStart(2, '0')}</span>
@@ -169,8 +150,6 @@ const App: Component = () => {
               <a
                 href="mailto:hello@bureau.studio"
                 class="text-sm hover:opacity-60 transition-opacity"
-                onMouseEnter={() => onEnter('mail')}
-                onMouseLeave={onLeave}
               >
                 hello@bureau.studio
               </a>
@@ -190,8 +169,6 @@ const App: Component = () => {
           <a
             href="#"
             class="font-medium tracking-tight text-lg"
-            onMouseEnter={() => onEnter('home')}
-            onMouseLeave={onLeave}
           >
             Bureau
           </a>
@@ -202,8 +179,6 @@ const App: Component = () => {
             <button
               class="text-sm opacity-60 hover:opacity-100 transition-opacity py-1"
               onClick={() => setMenuOpen(true)}
-              onMouseEnter={() => onEnter('menu')}
-              onMouseLeave={onLeave}
             >
               Menu
             </button>
@@ -267,8 +242,8 @@ const App: Component = () => {
               <A
                 href={`/project/${work.slug}`}
                 class="group flex items-center justify-between border-t border-[#1a1a1a]/10 py-6 md:py-9 gap-4 md:gap-8"
-                onMouseEnter={() => { setActiveWork(index()); onEnter('view'); }}
-                onMouseLeave={() => { setActiveWork(null); onLeave(); }}
+                onMouseEnter={() => setActiveWork(index())}
+                onMouseLeave={() => setActiveWork(null)}
               >
                 <div class="flex items-baseline gap-4 md:gap-10 min-w-0">
                   <span class="text-xs opacity-25 font-mono shrink-0 hidden sm:block">
@@ -417,8 +392,6 @@ const App: Component = () => {
             <a
               href="mailto:hello@bureau.studio"
               class="inline-block text-[clamp(1.6rem,6vw,5rem)] font-light leading-none tracking-tight hover:opacity-50 transition-opacity duration-300 break-all"
-              onMouseEnter={() => onEnter('mail')}
-              onMouseLeave={onLeave}
             >
               hello@bureau.studio
             </a>
@@ -438,8 +411,6 @@ const App: Component = () => {
                       <a
                         href="#"
                         class="opacity-60 hover:opacity-100 transition-opacity w-fit"
-                        onMouseEnter={() => onEnter('link')}
-                        onMouseLeave={onLeave}
                       >
                         {s}
                       </a>
