@@ -1,8 +1,7 @@
 /* @refresh reload */
 import { render } from 'solid-js/web';
 import { Router, Route } from '@solidjs/router';
-import { lazy, Suspense } from 'solid-js';
-import { ErrorBoundary } from 'solid-js';
+import { lazy, Suspense, ErrorBoundary } from 'solid-js';
 import { MetaProvider } from '@solidjs/meta';
 import App from './App';
 import './index.css';

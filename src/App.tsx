@@ -247,10 +247,6 @@ const App: Component = () => {
       <section
         id="work"
         class="px-6 md:px-12 py-20 md:py-32"
-        style={{
-          opacity: visibleSections.work ? 1 : 0,
-          transition: 'opacity 0.7s ease-out',
-        }}
       >
         <div class="flex justify-between items-baseline mb-10 md:mb-12">
           <h2 class="text-xs uppercase tracking-[0.2em] opacity-30">Selected Work</h2>
@@ -451,7 +447,7 @@ const App: Component = () => {
       {/* Footer */}
       <footer class="px-6 md:px-12 py-6 border-t border-[#1a1a1a]/10">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-4">
-          <div class="text-xs opacity-25">© {new Date().getFullYear()} Bureau, Berlin</div>
+          <div class="text-xs opacity-25">© 2025 Bureau, Berlin</div>
           <div class="text-xs opacity-25 font-mono hidden md:block">Brand & Digital for Climate & Deep Tech</div>
           <div class="text-xs opacity-25">Jonas Ek · Mara Voss</div>
         </div>

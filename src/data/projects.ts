@@ -21,7 +21,6 @@ export const projects: Project[] = [
     client: 'Solaris',
     type: 'Brand Identity',
     year: '2024',
-    // Solar farm aerial — vast, geometric, purposeful
     image: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=800&q=80',
     heroImage: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=1920&q=90',
     description: 'Brand identity for a utility-scale solar infrastructure company operating across Central Europe.',
@@ -33,11 +32,8 @@ export const projects: Project[] = [
       'Brand guidelines adopted as internal design standard by two municipal energy partners',
     ],
     gallery: [
-      // Solar panels at golden hour — warm, architectural
       'https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?w=1200&q=80',
-      // Power lines against open sky — infrastructure, scale
       'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=1200&q=80',
-      // Wind turbines at dawn — clean energy landscape
       'https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=1200&q=80',
     ],
     tags: ['Brand Identity', 'Type System', 'Environmental', 'Guidelines'],
@@ -49,7 +45,6 @@ export const projects: Project[] = [
     client: 'Kin',
     type: 'Digital Product',
     year: '2024',
-    // Lab / biotech — clean white, precision instruments
     image: 'https://images.unsplash.com/photo-1576086213369-97a306d36557?w=800&q=80',
     heroImage: 'https://images.unsplash.com/photo-1576086213369-97a306d36557?w=1920&q=90',
     description: 'Product design and design system for a longevity biotech platform that translates clinical biomarker data into actionable health protocols.',
@@ -61,11 +56,8 @@ export const projects: Project[] = [
       'Design system shipped across iOS, Android, and web in 11 weeks',
     ],
     gallery: [
-      // Microscope / lab research — scientific precision
       'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?w=1200&q=80',
-      // Data on screens — analysis, clarity
       'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&q=80',
-      // DNA / molecule structure — biotech identity
       'https://images.unsplash.com/photo-1614935151651-0bea6508db6b?w=1200&q=80',
     ],
     tags: ['Product Design', 'Design System', 'iOS & Android', 'Data Visualisation'],
@@ -77,7 +69,6 @@ export const projects: Project[] = [
     client: 'Conductor',
     type: 'Brand & Web',
     year: '2023',
-    // Server / energy grid infrastructure — structured, technical
     image: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&q=80',
     heroImage: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1920&q=90',
     description: 'Full brand and marketing site for a B2B SaaS platform that helps grid operators balance renewable energy loads in real time.',
@@ -89,11 +80,8 @@ export const projects: Project[] = [
       'Landed two Tier 1 grid operator contracts within 90 days of launch',
     ],
     gallery: [
-      // Control room — operators, screens, infrastructure management
       'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=1200&q=80',
-      // High voltage power lines — energy grid, scale
       'https://images.unsplash.com/photo-1497435334941-8c899ee9e8e9?w=1200&q=80',
-      // Server racks — backend infrastructure, precision
       'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=1200&q=80',
     ],
     tags: ['Brand Identity', 'Web Design', 'Copywriting', 'Development'],
@@ -105,7 +93,6 @@ export const projects: Project[] = [
     client: 'Havn',
     type: 'Brand Identity',
     year: '2023',
-    // Electric vessel on water — clean, maritime, modern
     image: 'https://images.unsplash.com/photo-1566438480900-0609be27a4be?w=800&q=80',
     heroImage: 'https://images.unsplash.com/photo-1566438480900-0609be27a4be?w=1920&q=90',
     description: 'Brand identity for a Scandinavian startup building electric passenger ferries for urban coastal routes.',
@@ -117,11 +104,8 @@ export const projects: Project[] = [
       'Secured naming partnership with Bergen municipality',
     ],
     gallery: [
-      // Calm fjord at dawn — stillness, nordic light
       'https://images.unsplash.com/photo-1531804055935-76f44d7c3621?w=1200&q=80',
-      // Harbour / dock detail — maritime texture
       'https://images.unsplash.com/photo-1504615458222-979e04d69a27?w=1200&q=80',
-      // Ocean horizon from deck — vastness, travel
       'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=1200&q=80',
     ],
     tags: ['Brand Identity', 'Custom Type', 'Environmental', 'Maritime'],

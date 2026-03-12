@@ -1,4 +1,4 @@
-import { Component, createSignal, onMount, onCleanup } from 'solid-js';
+import { Component, createSignal, onMount, onCleanup, Show } from 'solid-js';
 
 const ForSale: Component = () => {
   const [open, setOpen] = createSignal(false);
@@ -34,7 +34,7 @@ const ForSale: Component = () => {
       </button>
 
       {/* Panel */}
-      {open() && (
+      <Show when={open()}>
         <div
           class="fixed bottom-20 right-6 z-[300] w-[min(360px,calc(100vw-3rem))] bg-[#1a1a1a] text-[#f0ede8] p-7 flex flex-col gap-6"
           style={closing()
@@ -92,7 +92,7 @@ const ForSale: Component = () => {
             <p class="text-[10px] text-center opacity-30 font-mono">vkavouras@proton.me</p>
           </div>
         </div>
-      )}
+      </Show>
     </>
   );
 };

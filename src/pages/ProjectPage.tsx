@@ -55,27 +55,34 @@ const ProjectPage: Component = () => {
     onCleanup(() => window.removeEventListener('scroll', handleScroll));
   });
 
-  // Reveal observer — re-runs when project() changes so <Show> has rendered
+  // Reveal observer — re-runs when project() changes so <Show> has rendered.
+  // Observer ref stored outside rAF so cleanup can always reach it.
   createEffect(() => {
     if (!project()) return;
 
-    // Two rAFs: first lets Solid flush the DOM, second ensures layout is complete
-    requestAnimationFrame(() => {
+    let observer: IntersectionObserver | null = null;
+
+    // Two rAFs: first lets Solid flush DOM, second ensures layout is complete
+    const raf1 = requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        const revealObserver = new IntersectionObserver(
+        observer = new IntersectionObserver(
           (entries) => {
             entries.forEach(entry => {
               if (entry.isIntersecting) {
                 entry.target.classList.add('is-visible');
-                revealObserver.unobserve(entry.target);
+                observer?.unobserve(entry.target);
               }
             });
           },
           { threshold: 0.05, rootMargin: '0px 0px -20px 0px' }
         );
-        document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
-        onCleanup(() => revealObserver.disconnect());
+        document.querySelectorAll('.reveal').forEach(el => observer!.observe(el));
       });
+    });
+
+    onCleanup(() => {
+      cancelAnimationFrame(raf1);
+      observer?.disconnect();
     });
   });
 
@@ -312,7 +319,7 @@ const ProjectPage: Component = () => {
           {/* Footer */}
           <footer class="px-6 md:px-12 py-6 border-t border-[#1a1a1a]/10">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-4">
-              <div class="text-xs opacity-25">© {new Date().getFullYear()} Bureau, Berlin</div>
+              <div class="text-xs opacity-25">© 2025 Bureau, Berlin</div>
               <div class="text-xs opacity-25 font-mono hidden md:block">Brand & Digital for Climate & Deep Tech</div>
               <div class="text-xs opacity-25">Jonas Ek · Mara Voss</div>
             </div>
