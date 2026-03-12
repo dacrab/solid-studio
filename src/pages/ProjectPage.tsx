@@ -62,6 +62,9 @@ const ProjectPage: Component = () => {
 
   const heroParallax = createMemo(() => `translateY(${scrollY() * 0.25}px)`);
   const heroOpacity = createMemo(() => Math.max(0, 1 - scrollY() / 700));
+
+  // Header becomes opaque once user scrolls past ~80px into the hero
+  const headerOpaque = createMemo(() => scrollY() > 80);
   const prevProject = createMemo(() => projects.find(p => p.slug === project()?.prevProject));
   const nextProject = createMemo(() => projects.find(p => p.slug === project()?.nextProject));
 
@@ -86,11 +89,30 @@ const ProjectPage: Component = () => {
           {/* Scroll progress */}
           <div class="fixed top-0 left-0 h-[1px] bg-[#1a1a1a] z-[200]" style={`width: ${scrollProgress() * 100}%`} />
 
-          {/* Header */}
-          <header class="fixed top-0 left-0 right-0 z-40 bg-[#f0ede8]/80 backdrop-blur-sm border-b border-[#1a1a1a]/5">
+          {/* Header — transparent over hero, opaque after scroll */}
+          <header
+            class="fixed top-0 left-0 right-0 z-40 transition-[background,backdrop-filter,border-color] duration-500 ease-out"
+            style={{
+              background: headerOpaque() ? 'rgba(240,237,232,0.85)' : 'transparent',
+              'backdrop-filter': headerOpaque() ? 'blur(12px)' : 'none',
+              'border-bottom': headerOpaque() ? '1px solid rgba(26,26,26,0.05)' : '1px solid transparent',
+            }}
+          >
             <nav class="flex justify-between items-center px-6 md:px-12 py-5">
-              <A href="/" class="font-medium tracking-tight text-lg">Bureau</A>
-              <A href="/" class="text-sm opacity-40 hover:opacity-100 transition-opacity py-1">← Work</A>
+              <A
+                href="/"
+                class="font-medium tracking-tight text-lg transition-colors duration-500"
+                style={{ color: headerOpaque() ? '#1a1a1a' : '#f0ede8' }}
+              >
+                Bureau
+              </A>
+              <A
+                href="/"
+                class="text-sm transition-colors duration-500 py-1"
+                style={{ color: headerOpaque() ? 'rgba(26,26,26,0.4)' : 'rgba(240,237,232,0.6)' }}
+              >
+                ← Work
+              </A>
             </nav>
           </header>
 
