@@ -46,8 +46,8 @@ button:focus-visible {
 /* Clip wipe — text reveals left to right                            */
 /* GPU composited — only animates clip-path, no layout/paint        */
 @keyframes clipReveal {
-  from { clip-path: inset(0 100% 0 0); }
-  to   { clip-path: inset(0 0% 0 0); }
+  from { clip-path: inset(0 100% -20% 0); }
+  to   { clip-path: inset(0 0% -20% 0); }
 }
 
 /* Slide up + fade — content entrances */
