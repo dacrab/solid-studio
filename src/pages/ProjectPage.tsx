@@ -2,6 +2,7 @@ import { Component, createSignal, createEffect, createMemo, onMount, onCleanup, 
 import { useParams, A, useNavigate } from '@solidjs/router';
 import { Title, Meta } from '@solidjs/meta';
 import { getProjectBySlug, projects, type Project } from '../data/projects';
+import ForSale from '../components/ForSale';
 
 const ProjectPage: Component = () => {
   const params = useParams<{ slug: string }>();
@@ -11,14 +12,32 @@ const ProjectPage: Component = () => {
   const [imageLoaded, setImageLoaded] = createSignal(false);
   const [scrollY, setScrollY] = createSignal(0);
   const [scrollProgress, setScrollProgress] = createSignal(0);
+  const [transitioning, setTransitioning] = createSignal(false);
+
+  // Track previous slug to detect navigation between projects
+  let prevSlug = '';
 
   createEffect(() => {
-    const p = getProjectBySlug(params.slug);
-    if (p) {
+    const slug = params.slug;
+    const p = getProjectBySlug(slug);
+    if (!p) { navigate('/', { replace: true }); return; }
+
+    // First load — no transition
+    if (!prevSlug) {
+      prevSlug = slug;
       batch(() => { setProject(p); setImageLoaded(false); });
-      window.scrollTo(0, 0);
-    } else {
-      navigate('/', { replace: true });
+      return;
+    }
+
+    // Navigating between projects — play out then in
+    if (slug !== prevSlug) {
+      prevSlug = slug;
+      setTransitioning(true);
+      setTimeout(() => {
+        batch(() => { setProject(p); setImageLoaded(false); });
+        window.scrollTo(0, 0);
+        setTransitioning(false);
+      }, 280);
     }
   });
 
@@ -71,7 +90,12 @@ const ProjectPage: Component = () => {
   return (
     <Show when={project()} fallback={<div class="min-h-screen bg-[#f0ede8]" />}>
       {(proj) => (
-        <div class="min-h-screen bg-[#f0ede8] text-[#1a1a1a]">
+        <div
+          class="min-h-screen bg-[#f0ede8] text-[#1a1a1a]"
+          style={transitioning()
+            ? 'animation: contentOut 0.28s cubic-bezier(0.4,0,1,1) both'
+            : 'animation: contentIn 0.5s cubic-bezier(0.16,1,0.3,1) both'}
+        >
           <Title>{proj().client} — Bureau</Title>
           <Meta name="description" content={proj().description} />
           <Meta property="og:site_name" content="Bureau" />
@@ -293,6 +317,8 @@ const ProjectPage: Component = () => {
               <div class="text-xs opacity-25">Jonas Ek · Mara Voss</div>
             </div>
           </footer>
+
+          <ForSale />
         </div>
       )}
     </Show>

@@ -11,6 +11,7 @@ import { createStore } from 'solid-js/store';
 import { A } from '@solidjs/router';
 import { Title, Meta } from '@solidjs/meta';
 import { projects } from './data/projects';
+import ForSale from './components/ForSale';
 
 const NAV_LINKS = [
   { name: 'Work', href: '#work' },
@@ -53,8 +54,14 @@ const App: Component = () => {
   const [time, setTime] = createSignal('');
   const [activeWork, setActiveWork] = createSignal<number | null>(null);
   const [menuOpen, setMenuOpen] = createSignal(false);
+  const [menuClosing, setMenuClosing] = createSignal(false);
   const [scrollProgress, setScrollProgress] = createSignal(0);
   const [heroReady, setHeroReady] = createSignal(false);
+
+  const closeMenu = () => {
+    setMenuClosing(true);
+    setTimeout(() => { setMenuOpen(false); setMenuClosing(false); }, 320);
+  };
 
   const [visibleSections, setVisibleSections] = createStore<Record<string, boolean>>({
     work: false,
@@ -103,8 +110,6 @@ const App: Component = () => {
     });
   });
 
-  // Section transition style — shared across About/Services/Contact
-  const sectionTransition = 'transition: opacity 0.9s cubic-bezier(0.16,1,0.3,1), transform 0.9s cubic-bezier(0.16,1,0.3,1)';
 
   return (
     <div class="min-h-screen bg-[#f0ede8] text-[#1a1a1a] selection:bg-[#1a1a1a] selection:text-[#f0ede8]">
@@ -121,13 +126,18 @@ const App: Component = () => {
       <Show when={menuOpen()}>
         <div
           class="fixed inset-0 bg-[#1a1a1a] z-50 flex flex-col justify-between p-6 md:p-12"
-          style="animation: menuIn 0.4s cubic-bezier(0.16,1,0.3,1) both"
+          style={menuClosing()
+            ? 'animation: menuOut 0.32s cubic-bezier(0.4,0,1,1) both'
+            : 'animation: menuIn 0.4s cubic-bezier(0.16,1,0.3,1) both'}
         >
-          <div class="flex justify-between items-center" style="animation: fadeIn 0.3s ease-out 0.15s both">
+          <div
+            class="flex justify-between items-center"
+            style={menuClosing() ? '' : 'animation: fadeIn 0.3s ease-out 0.15s both'}
+          >
             <span class="text-[#f0ede8] font-medium tracking-tight text-lg">Bureau</span>
             <button
               class="text-[#f0ede8] text-sm opacity-60 hover:opacity-100 transition-opacity py-2 px-1"
-              onClick={() => setMenuOpen(false)}
+              onClick={closeMenu}
             >
               Close
             </button>
@@ -139,8 +149,8 @@ const App: Component = () => {
                 <a
                   href={item.href}
                   class="group flex items-baseline gap-4 md:gap-6 text-[#f0ede8] text-[clamp(2rem,9vw,6rem)] font-light leading-none tracking-tight py-3 border-b border-[#f0ede8]/10 hover:border-[#f0ede8]/30 transition-colors duration-300"
-                  onClick={() => setMenuOpen(false)}
-                  style={`animation: slideUp 0.5s cubic-bezier(0.16,1,0.3,1) ${0.1 + i() * 0.08}s both`}
+                  onClick={closeMenu}
+                  style={menuClosing() ? '' : `animation: slideUp 0.5s cubic-bezier(0.16,1,0.3,1) ${0.1 + i() * 0.08}s both`}
                 >
                   <span class="text-[#f0ede8]/20 text-xs font-mono w-5 shrink-0">{String(i() + 1).padStart(2, '0')}</span>
                   <span class="group-hover:translate-x-2 transition-transform duration-300">{item.name}</span>
@@ -151,7 +161,7 @@ const App: Component = () => {
 
           <div
             class="flex justify-between items-end text-[#f0ede8]"
-            style="animation: slideUp 0.5s cubic-bezier(0.16,1,0.3,1) 0.42s both"
+            style={menuClosing() ? '' : 'animation: slideUp 0.5s cubic-bezier(0.16,1,0.3,1) 0.42s both'}
           >
             <div>
               <p class="text-xs opacity-40 mb-1">New projects</p>
@@ -446,6 +456,8 @@ const App: Component = () => {
           <div class="text-xs opacity-25">Jonas Ek · Mara Voss</div>
         </div>
       </footer>
+
+      <ForSale />
     </div>
   );
 };

@@ -68,6 +68,24 @@ button:focus-visible {
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* Menu slide up — overlay exit */
+@keyframes menuOut {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-6px); }
+}
+
+/* Page content transition out — project navigation */
+@keyframes contentOut {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(10px); }
+}
+
+/* Page content transition in — project navigation */
+@keyframes contentIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 /* Scale in — cinematic image zoom on load */
 @keyframes scaleIn {
   from { transform: scale(1.05); }
