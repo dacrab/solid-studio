@@ -31,15 +31,15 @@ const STATS = [
 const PRINCIPLES = [
   {
     title: 'We work with fewer clients, not more',
-    desc: 'Four to six projects a year. Enough to do each one properly. We have turned down work from companies most studios would kill for — because the timing was wrong, or the brief was vague, or we didn\'t believe in what they were building.',
+    desc: "Four to six projects a year. Enough to do each one properly. We have turned down work from companies most studios would kill for — because the timing was wrong, or the brief was vague, or we didn't believe in what they were building.",
   },
   {
     title: 'The work has to stand on its own',
-    desc: 'We don\'t enter awards. We don\'t post process threads. If the identity doesn\'t work in the real world — on a building, in a product, under pressure — it doesn\'t work. Everything else is decoration.',
+    desc: "We don't enter awards. We don't post process threads. If the identity doesn't work in the real world — on a building, in a product, under pressure — it doesn't work. Everything else is decoration.",
   },
   {
     title: 'We write our own briefs',
-    desc: 'Most briefs are wish lists written by committee. We spend the first two weeks of every project tearing the brief apart and rebuilding it. Clients who trust us to do that get better work. Clients who don\'t tend to go elsewhere.',
+    desc: "Most briefs are wish lists written by committee. We spend the first two weeks of every project tearing the brief apart and rebuilding it. Clients who trust us to do that get better work. Clients who don't tend to go elsewhere.",
   },
 ] as const;
 
@@ -54,6 +54,7 @@ const App: Component = () => {
   const [activeWork, setActiveWork] = createSignal<number | null>(null);
   const [menuOpen, setMenuOpen] = createSignal(false);
   const [scrollProgress, setScrollProgress] = createSignal(0);
+  const [heroReady, setHeroReady] = createSignal(false);
 
   const [visibleSections, setVisibleSections] = createStore<Record<string, boolean>>({
     work: false,
@@ -67,11 +68,12 @@ const App: Component = () => {
   });
 
   onMount(() => {
+    // Slight delay so first paint completes before hero animates
+    const heroTimer = setTimeout(() => setHeroReady(true), 80);
+
     const updateTime = () => {
       setTime(new Date().toLocaleTimeString('de-DE', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
+        hour: '2-digit', minute: '2-digit', hour12: false,
         timeZone: 'Europe/Berlin',
       }));
     };
@@ -84,22 +86,25 @@ const App: Component = () => {
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(entry => {
-          if (entry.target.id) setVisibleSections(entry.target.id, entry.isIntersecting);
-        });
-      },
-      { threshold: 0.2 }
+    // Section entrance observer
+    const sectionObserver = new IntersectionObserver(
+      (entries) => entries.forEach(entry => {
+        if (entry.target.id) setVisibleSections(entry.target.id, entry.isIntersecting);
+      }),
+      { threshold: 0.12 }
     );
-    document.querySelectorAll('section[id]').forEach(s => observer.observe(s));
+    document.querySelectorAll('section[id]').forEach(s => sectionObserver.observe(s));
 
     onCleanup(() => {
+      clearTimeout(heroTimer);
       clearInterval(timeInterval);
       window.removeEventListener('scroll', handleScroll);
-      observer.disconnect();
+      sectionObserver.disconnect();
     });
   });
+
+  // Section transition style — shared across About/Services/Contact
+  const sectionTransition = 'transition: opacity 0.9s cubic-bezier(0.16,1,0.3,1), transform 0.9s cubic-bezier(0.16,1,0.3,1)';
 
   return (
     <div class="min-h-screen bg-[#f0ede8] text-[#1a1a1a] selection:bg-[#1a1a1a] selection:text-[#f0ede8]">
@@ -108,7 +113,7 @@ const App: Component = () => {
 
       {/* Scroll progress */}
       <div
-        class="fixed top-0 left-0 h-[1px] bg-[#1a1a1a] z-[200]"
+        class="fixed top-0 left-0 h-[1px] bg-[#1a1a1a] z-[200] transition-none"
         style={`width: ${scrollProgress() * 100}%`}
       />
 
@@ -116,9 +121,9 @@ const App: Component = () => {
       <Show when={menuOpen()}>
         <div
           class="fixed inset-0 bg-[#1a1a1a] z-50 flex flex-col justify-between p-6 md:p-12"
-          style="animation: fadeIn 0.25s ease-out"
+          style="animation: menuIn 0.4s cubic-bezier(0.16,1,0.3,1) both"
         >
-          <div class="flex justify-between items-center">
+          <div class="flex justify-between items-center" style="animation: fadeIn 0.3s ease-out 0.15s both">
             <span class="text-[#f0ede8] font-medium tracking-tight text-lg">Bureau</span>
             <button
               class="text-[#f0ede8] text-sm opacity-60 hover:opacity-100 transition-opacity py-2 px-1"
@@ -135,7 +140,7 @@ const App: Component = () => {
                   href={item.href}
                   class="group flex items-baseline gap-4 md:gap-6 text-[#f0ede8] text-[clamp(2rem,9vw,6rem)] font-light leading-none tracking-tight py-3 border-b border-[#f0ede8]/10 hover:border-[#f0ede8]/30 transition-colors duration-300"
                   onClick={() => setMenuOpen(false)}
-                  style={`animation: slideUp 0.35s ease-out ${i() * 0.06}s both`}
+                  style={`animation: slideUp 0.5s cubic-bezier(0.16,1,0.3,1) ${0.1 + i() * 0.08}s both`}
                 >
                   <span class="text-[#f0ede8]/20 text-xs font-mono w-5 shrink-0">{String(i() + 1).padStart(2, '0')}</span>
                   <span class="group-hover:translate-x-2 transition-transform duration-300">{item.name}</span>
@@ -144,13 +149,13 @@ const App: Component = () => {
             </For>
           </nav>
 
-          <div class="flex justify-between items-end text-[#f0ede8]">
+          <div
+            class="flex justify-between items-end text-[#f0ede8]"
+            style="animation: slideUp 0.5s cubic-bezier(0.16,1,0.3,1) 0.42s both"
+          >
             <div>
               <p class="text-xs opacity-40 mb-1">New projects</p>
-              <a
-                href="mailto:hello@bureau.studio"
-                class="text-sm hover:opacity-60 transition-opacity"
-              >
+              <a href="mailto:hello@bureau.studio" class="text-sm hover:opacity-60 transition-opacity">
                 hello@bureau.studio
               </a>
             </div>
@@ -165,17 +170,13 @@ const App: Component = () => {
 
       {/* Header */}
       <header class="fixed top-0 left-0 right-0 z-40 bg-[#f0ede8]/80 backdrop-blur-sm border-b border-[#1a1a1a]/5">
-        <nav class="flex justify-between items-center px-6 md:px-12 py-5">
-          <a
-            href="#"
-            class="font-medium tracking-tight text-lg"
-          >
-            Bureau
-          </a>
+        <nav
+          class="flex justify-between items-center px-6 md:px-12 py-5"
+          style="animation: fadeIn 0.8s ease-out 0.1s both"
+        >
+          <a href="#" class="font-medium tracking-tight text-lg">Bureau</a>
           <div class="flex items-center gap-6 md:gap-8">
-            <span class="text-sm font-mono opacity-40 hidden sm:block">
-              Berlin {time()}
-            </span>
+            <span class="text-sm font-mono opacity-40 hidden sm:block">Berlin {time()}</span>
             <button
               class="text-sm opacity-60 hover:opacity-100 transition-opacity py-1"
               onClick={() => setMenuOpen(true)}
@@ -191,23 +192,34 @@ const App: Component = () => {
         <div class="space-y-8 md:space-y-0 md:grid md:grid-cols-12 md:gap-8">
           <div class="md:col-span-9">
             <h1 class="text-[clamp(2.6rem,9vw,9rem)] font-light leading-[0.88] tracking-[-0.04em]">
-              Brand and digital
-              <br />
-              for companies
-              <br />
-              <span class="italic">building what's next.</span>
+              <Show when={heroReady()}>
+                <span class="block overflow-hidden">
+                  <span class="block animate-clip-reveal" style="animation-delay: 0s">Brand and digital</span>
+                </span>
+                <span class="block overflow-hidden">
+                  <span class="block animate-clip-reveal" style="animation-delay: 0.13s">for companies</span>
+                </span>
+                <span class="block overflow-hidden">
+                  <span class="block animate-clip-reveal italic" style="animation-delay: 0.26s">building what's next.</span>
+                </span>
+              </Show>
             </h1>
           </div>
           <div class="md:col-span-3 md:pt-4 md:flex md:flex-col md:justify-end">
-            <p class="text-sm leading-relaxed opacity-50 max-w-xs">
+            <p
+              class="text-sm leading-relaxed opacity-50 max-w-xs"
+              style={heroReady() ? 'animation: slideUp 0.8s cubic-bezier(0.16,1,0.3,1) 0.52s both' : 'opacity: 0'}
+            >
               Bureau is Jonas Ek and Mara Voss. We work with climate and deep tech
               companies that are serious about what they're doing.
             </p>
           </div>
         </div>
 
-        {/* Bottom row — hide scroll indicator on mobile, keep metadata */}
-        <div class="flex justify-between items-end mt-16 md:mt-0 pt-8 md:pt-0 border-t border-[#1a1a1a]/8 md:border-none">
+        <div
+          class="flex justify-between items-end mt-16 md:mt-0 pt-8 md:pt-0 border-t border-[#1a1a1a]/8 md:border-none"
+          style={heroReady() ? 'animation: fadeIn 1s ease-out 0.8s both' : 'opacity: 0'}
+        >
           <div class="flex gap-6 text-xs opacity-30 font-mono">
             <span>Est. 2019</span>
             <span>Berlin, DE</span>
@@ -215,10 +227,7 @@ const App: Component = () => {
           <div class="hidden md:flex flex-col items-end gap-2 text-xs opacity-30">
             <span class="font-mono">{Math.round(scrollProgress() * 100)}%</span>
             <div class="w-px h-10 bg-[#1a1a1a]/20 relative overflow-hidden">
-              <div
-                class="absolute top-0 left-0 w-full bg-[#1a1a1a]"
-                style={`height: ${scrollProgress() * 100}%`}
-              />
+              <div class="absolute top-0 left-0 w-full bg-[#1a1a1a] transition-none" style={`height: ${scrollProgress() * 100}%`} />
             </div>
           </div>
         </div>
@@ -228,8 +237,10 @@ const App: Component = () => {
       <section
         id="work"
         class="px-6 md:px-12 py-20 md:py-32"
-        classList={{ 'opacity-100': visibleSections.work, 'opacity-0': !visibleSections.work }}
-        style="transition: opacity 0.7s ease-out"
+        style={{
+          opacity: visibleSections.work ? 1 : 0,
+          transition: 'opacity 0.7s ease-out',
+        }}
       >
         <div class="flex justify-between items-baseline mb-10 md:mb-12">
           <h2 class="text-xs uppercase tracking-[0.2em] opacity-30">Selected Work</h2>
@@ -242,6 +253,11 @@ const App: Component = () => {
               <A
                 href={`/project/${work.slug}`}
                 class="group flex items-center justify-between border-t border-[#1a1a1a]/10 py-6 md:py-9 gap-4 md:gap-8"
+                style={{
+                  opacity: visibleSections.work ? 1 : 0,
+                  transform: visibleSections.work ? 'translateY(0)' : 'translateY(10px)',
+                  transition: `opacity 0.7s cubic-bezier(0.16,1,0.3,1) ${index() * 0.09}s, transform 0.7s cubic-bezier(0.16,1,0.3,1) ${index() * 0.09}s`,
+                }}
                 onMouseEnter={() => setActiveWork(index())}
                 onMouseLeave={() => setActiveWork(null)}
               >
@@ -250,7 +266,7 @@ const App: Component = () => {
                     {String(index() + 1).padStart(2, '0')}
                   </span>
                   <div class="min-w-0">
-                    <h3 class="text-xl md:text-[2.5rem] font-light tracking-tight leading-none group-hover:translate-x-2 transition-transform duration-300 truncate">
+                    <h3 class="text-xl md:text-[2.5rem] font-light tracking-tight leading-none group-hover:translate-x-2 transition-transform duration-500 ease-out truncate">
                       {work.client}
                     </h3>
                     <p class="text-xs md:text-sm opacity-30 mt-1.5">{work.type}</p>
@@ -259,23 +275,25 @@ const App: Component = () => {
                 <div class="flex items-center gap-4 md:gap-6 shrink-0">
                   <span class="text-sm opacity-30 hidden md:block">{work.year}</span>
                   <svg
-                    class="w-4 h-4 opacity-40 md:opacity-0 group-hover:opacity-60 transition-all duration-300 md:-translate-x-2 group-hover:translate-x-0 shrink-0"
+                    class="w-4 h-4 opacity-40 md:opacity-0 group-hover:opacity-60 transition-all duration-500 ease-out md:-translate-x-2 group-hover:translate-x-0 shrink-0"
                     fill="none" viewBox="0 0 24 24" stroke="currentColor"
                   >
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
                   </svg>
                 </div>
 
-                {/* Hover image preview — desktop only, not rendered on mobile */}
+                {/* Hover preview — desktop only, scaleInFast for snappy appearance */}
                 <Show when={activeWork() === index()}>
                   <div
                     class="fixed top-1/2 right-20 w-[300px] h-[400px] pointer-events-none z-30 hidden lg:block overflow-hidden"
-                    style={{
-                      transform: 'translateY(-50%)',
-                      animation: 'fadeIn 0.3s ease-out',
-                    }}
+                    style={{ transform: 'translateY(-50%)', animation: 'fadeIn 0.2s ease-out' }}
                   >
-                    <img src={work.image} alt={work.client} class="w-full h-full object-cover" loading="lazy" />
+                    <img
+                      src={work.image}
+                      alt={work.client}
+                      class="w-full h-full object-cover animate-scale-in-fast"
+                      loading="lazy"
+                    />
                   </div>
                 </Show>
               </A>
@@ -288,8 +306,11 @@ const App: Component = () => {
       <section
         id="about"
         class="px-6 md:px-12 py-20 md:py-32 bg-[#1a1a1a] text-[#f0ede8]"
-        classList={{ 'opacity-100': visibleSections.about, 'opacity-0': !visibleSections.about }}
-        style="transition: opacity 0.7s ease-out"
+        style={{
+          opacity: visibleSections.about ? 1 : 0,
+          transform: visibleSections.about ? 'translateY(0)' : 'translateY(8px)',
+          transition: 'opacity 0.9s cubic-bezier(0.16,1,0.3,1), transform 0.9s cubic-bezier(0.16,1,0.3,1)',
+        }}
       >
         <div class="grid md:grid-cols-12 gap-10 md:gap-8">
           <div class="md:col-span-5 md:col-start-2">
@@ -310,16 +331,14 @@ const App: Component = () => {
             </p>
           </div>
           <div class="md:col-span-4 md:col-start-9 md:pt-20">
-            <div>
-              <For each={STATS}>
-                {(stat) => (
-                  <div class="flex justify-between items-baseline border-b border-[#f0ede8]/10 py-4 md:py-5">
-                    <span class="text-sm opacity-40">{stat.label}</span>
-                    <AnimatedNumber value={stat.value} active={visibleSections.about} />
-                  </div>
-                )}
-              </For>
-            </div>
+            <For each={STATS}>
+              {(stat) => (
+                <div class="flex justify-between items-baseline border-b border-[#f0ede8]/10 py-4 md:py-5">
+                  <span class="text-sm opacity-40">{stat.label}</span>
+                  <AnimatedNumber value={stat.value} active={visibleSections.about} />
+                </div>
+              )}
+            </For>
             <div class="mt-8 md:mt-12">
               <p class="text-xs uppercase tracking-[0.2em] opacity-30 mb-3 md:mb-4">Currently based</p>
               <p class="text-sm opacity-60">Prenzlauer Berg, Berlin</p>
@@ -333,37 +352,37 @@ const App: Component = () => {
       <section
         id="services"
         class="px-6 md:px-12 py-20 md:py-32"
-        classList={{ 'opacity-100': visibleSections.services, 'opacity-0': !visibleSections.services }}
-        style="transition: opacity 0.7s ease-out"
+        style={{
+          opacity: visibleSections.services ? 1 : 0,
+          transform: visibleSections.services ? 'translateY(0)' : 'translateY(8px)',
+          transition: 'opacity 0.9s cubic-bezier(0.16,1,0.3,1), transform 0.9s cubic-bezier(0.16,1,0.3,1)',
+        }}
       >
         <div class="grid md:grid-cols-12 gap-10 md:gap-12">
           <div class="md:col-span-3">
-            {/* On mobile show as inline label, on desktop sticky */}
             <h2 class="text-xs uppercase tracking-[0.2em] opacity-30 md:sticky md:top-24">How we work</h2>
           </div>
           <div class="md:col-span-7">
-            <div>
-              <For each={PRINCIPLES}>
-                {(item, i) => (
-                  <div class="border-t border-[#1a1a1a]/10 py-7 md:py-8">
-                    <div class="flex gap-5 md:gap-10">
-                      <span class="text-xs font-mono opacity-20 pt-1 shrink-0">{String(i() + 1).padStart(2, '0')}</span>
-                      <div>
-                        <h3 class="text-base md:text-xl font-light mb-2 md:mb-3 leading-snug">{item.title}</h3>
-                        <p class="text-sm leading-relaxed opacity-40">{item.desc}</p>
-                      </div>
+            <For each={PRINCIPLES}>
+              {(item, i) => (
+                <div class="border-t border-[#1a1a1a]/10 py-7 md:py-8">
+                  <div class="flex gap-5 md:gap-10">
+                    <span class="text-xs font-mono opacity-20 pt-1 shrink-0">{String(i() + 1).padStart(2, '0')}</span>
+                    <div>
+                      <h3 class="text-base md:text-xl font-light mb-2 md:mb-3 leading-snug">{item.title}</h3>
+                      <p class="text-sm leading-relaxed opacity-40">{item.desc}</p>
                     </div>
                   </div>
-                )}
-              </For>
-            </div>
+                </div>
+              )}
+            </For>
 
             <div class="mt-12 pt-8 border-t border-[#1a1a1a]/10">
               <p class="text-xs uppercase tracking-[0.2em] opacity-30 mb-5">What we do</p>
               <div class="flex flex-wrap gap-2 md:gap-3">
                 <For each={CAPABILITIES}>
                   {(cap) => (
-                    <span class="text-xs md:text-sm px-3 md:px-4 py-1.5 md:py-2 border border-[#1a1a1a]/15 rounded-full opacity-60">
+                    <span class="text-xs md:text-sm px-3 md:px-4 py-1.5 md:py-2 border border-[#1a1a1a]/15 rounded-full opacity-50 hover:opacity-100 transition-opacity duration-300">
                       {cap}
                     </span>
                   )}
@@ -378,8 +397,11 @@ const App: Component = () => {
       <section
         id="contact"
         class="px-6 md:px-12 py-20 md:py-32 bg-[#1a1a1a] text-[#f0ede8]"
-        classList={{ 'opacity-100': visibleSections.contact, 'opacity-0': !visibleSections.contact }}
-        style="transition: opacity 0.7s ease-out"
+        style={{
+          opacity: visibleSections.contact ? 1 : 0,
+          transform: visibleSections.contact ? 'translateY(0)' : 'translateY(8px)',
+          transition: 'opacity 0.9s cubic-bezier(0.16,1,0.3,1), transform 0.9s cubic-bezier(0.16,1,0.3,1)',
+        }}
       >
         <div class="grid md:grid-cols-12 gap-10 md:gap-8">
           <div class="md:col-span-7 md:col-start-2">
@@ -391,7 +413,7 @@ const App: Component = () => {
             </p>
             <a
               href="mailto:hello@bureau.studio"
-              class="inline-block text-[clamp(1.6rem,6vw,5rem)] font-light leading-none tracking-tight hover:opacity-50 transition-opacity duration-300 break-all"
+              class="inline-block text-[clamp(1.6rem,6vw,5rem)] font-light leading-none tracking-tight hover:opacity-50 transition-opacity duration-500 break-all"
             >
               hello@bureau.studio
             </a>
@@ -407,14 +429,7 @@ const App: Component = () => {
                 <p class="opacity-30 mb-1 text-xs uppercase tracking-wider">Social</p>
                 <div class="flex flex-col gap-1">
                   <For each={SOCIALS}>
-                    {(s) => (
-                      <a
-                        href="#"
-                        class="opacity-60 hover:opacity-100 transition-opacity w-fit"
-                      >
-                        {s}
-                      </a>
-                    )}
+                    {(s) => <a href="#" class="opacity-60 hover:opacity-100 transition-opacity duration-300 w-fit">{s}</a>}
                   </For>
                 </div>
               </div>
@@ -439,9 +454,7 @@ const AnimatedNumber: Component<{ value: number; active: boolean }> = (props) =>
   const [current, setCurrent] = createSignal(0);
 
   createEffect(() => {
-    // Always register cleanup regardless of branch
     let interval: ReturnType<typeof setInterval> | undefined;
-
     if (!props.active) {
       setCurrent(0);
     } else {
@@ -449,15 +462,11 @@ const AnimatedNumber: Component<{ value: number; active: boolean }> = (props) =>
       interval = setInterval(() => {
         setCurrent(prev => {
           const next = prev + step;
-          if (next >= props.value) {
-            clearInterval(interval);
-            return props.value;
-          }
+          if (next >= props.value) { clearInterval(interval); return props.value; }
           return next;
         });
       }, 30);
     }
-
     onCleanup(() => { if (interval) clearInterval(interval); });
   });
 
