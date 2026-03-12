@@ -94,7 +94,7 @@ export const projects: Project[] = [
       // High voltage power lines — energy grid, scale
       'https://images.unsplash.com/photo-1497435334941-8c899ee9e8e9?w=1200&q=80',
       // Server racks — backend infrastructure, precision
-      'https://images.unsplash.com/photo-1600267185393-1b14be5cf254?w=1200&q=80',
+      'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=1200&q=80',
     ],
     tags: ['Brand Identity', 'Web Design', 'Copywriting', 'Development'],
     nextProject: 'havn',
