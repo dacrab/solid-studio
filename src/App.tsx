@@ -199,7 +199,7 @@ const App: Component = () => {
                 <span class="block overflow-hidden">
                   <span class="block animate-clip-reveal" style="animation-delay: 0.13s">for companies</span>
                 </span>
-                <span class="block overflow-hidden">
+                <span class="block overflow-hidden pb-[0.15em] -mb-[0.15em]">
                   <span class="block animate-clip-reveal italic" style="animation-delay: 0.26s">building what's next.</span>
                 </span>
               </Show>
